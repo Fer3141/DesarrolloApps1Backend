@@ -14,7 +14,7 @@ import uade.edu.ar.Cocinapp.Servicios.RegistroCodigoService;
 import uade.edu.ar.Cocinapp.Servicios.usuariosService;
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/api")
 public class UsuarioController {
 	
 	@Autowired
@@ -23,9 +23,13 @@ public class UsuarioController {
     @Autowired
     private RegistroCodigoService codigoService;
 
-    @GetMapping("/verificar-disponibilidad")
+    @PostMapping("/auth/verificar")
     public ResponseEntity<?> verificarDisponibilidadYEnviarCodigo(@RequestBody RegistroRequest request) {
-        if (us.existeMailONickname(request.getMail(), request.getNickname())) {
+    	System.out.println("→ LLEGO solicitud desde Android");
+    	System.out.println("→ MAIL: " + request.getMail());
+    	System.out.println("→ NICKNAME: " + request.getNickname());
+
+    	if (us.existeMailONickname(request.getMail(), request.getNickname())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Mail o alias ya están en uso.");
         }
 
@@ -35,20 +39,32 @@ public class UsuarioController {
 
     @PostMapping("/verificar-codigo")
     public ResponseEntity<?> verificarCodigo(@RequestBody CodigoVerificacionRequest request) {
-        boolean esValido = codigoService.verificarCodigo(request.getMail(), request.getCodigo());
+        System.out.println("→ Verificando código para: " + request.getMail());
+        String resultado = codigoService.verificarCodigo(request.getMail(), request.getCodigo());
 
-        if (!esValido) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Código incorrecto o expirado.");
+        switch (resultado) {
+            case "EXPIRADO":
+                return ResponseEntity.status(HttpStatus.GONE).body("⏰ Código expirado.");
+            case "INVALIDO":
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("❌ Código incorrecto.");
+            case "NO_EXISTE":
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("❌ No se ha solicitado un código para este mail.");
+            case "VALIDO":
+                return ResponseEntity.ok("✅ Código válido. Continuar con el registro.");
+            default:
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado.");
         }
-
-        usuarios usuario = us.habilitarUsuario(request.getMail());
-
-        if (usuario == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado.");
-        }
-
-        return ResponseEntity.ok("Usuario verificado y habilitado.");
     }
+
+
+
+    
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+    	System.out.println("→ LLEGO solicitud desde Android: PONG");
+        return ResponseEntity.ok("pong2");
+    }
+
     
     public static class RegistroRequest {
         private String mail;

@@ -10,40 +10,67 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class RegistroCodigoService {
 
-    // Almacena códigos temporales: mail → código + expiración
+    // Map que almacena códigos por mail, con fecha de expiración
     private final Map<String, CodigoRegistro> codigos = new ConcurrentHashMap<>();
-    
+
     @Autowired
     private CorreoService correoService;
 
-    // Genera y guarda un código temporalmente, y lo "envía" (acá simulado)
+    /**
+     * Genera un código aleatorio, lo guarda y simula el envío por correo.
+     */
     public void generarYEnviarCodigo(String mail) {
-        String codigo = String.valueOf((int) (Math.random() * 900_000 + 100_000)); // Código de 6 dígitos
-        LocalDateTime expiracion = LocalDateTime.now().plusMinutes(10);
+        String codigo = generarCodigo();
+        LocalDateTime expiracion = LocalDateTime.now().plusSeconds(30);
 
         codigos.put(mail, new CodigoRegistro(codigo, expiracion));
-
-        // Simula envío de correo (reemplazá esto por tu servicio real de mail)
         correoService.enviarCodigoVerificacion(mail, codigo);
+
+        System.out.println("✔ Código generado para " + mail + ": " + codigo);
     }
 
-    // Verifica si el código ingresado es válido
-    public boolean verificarCodigo(String mail, String codigoIngresado) {
+    /**
+     * Verifica si el código ingresado es correcto y no ha expirado.
+     */
+    public String verificarCodigo(String mail, String codigoIngresado) {
         CodigoRegistro registro = codigos.get(mail);
-        if (registro == null) return false;
+        System.out.println("→ Buscando código para: " + mail);
 
-        if (registro.expiracion.isBefore(LocalDateTime.now())) {
-            codigos.remove(mail); // elimina si expiró
-            return false;
+        if (registro == null) {
+            System.out.println("❌ No hay código generado para ese mail.");
+            return "NO_EXISTE";
         }
 
-        boolean esValido = registro.codigo.equals(codigoIngresado);
-        if (esValido) codigos.remove(mail); // elimina si se usa correctamente
+        if (registro.expiracion.isBefore(LocalDateTime.now())) {
+            System.out.println("❌ Código expirado para " + mail + ". Expiraba a: " + registro.expiracion);
+            codigos.remove(mail);
+            return "EXPIRADO";
+        }
 
-        return esValido;
+        if (!registro.codigo.equals(codigoIngresado)) {
+            System.out.println("❌ Código incorrecto para " + mail);
+            System.out.println("→ Código esperado: " + registro.codigo);
+            System.out.println("→ Código ingresado: " + codigoIngresado);
+            return "INVALIDO";
+        }
+
+        // Código correcto
+        codigos.remove(mail);
+        System.out.println("✅ Código verificado correctamente para " + mail + ". Código: " + codigoIngresado);
+        return "VALIDO";
     }
 
-    // Clase interna para agrupar código + expiración
+
+
+
+    private String generarCodigo() {
+        int random = (int) (Math.random() * 900_000 + 100_000); // 6 dígitos
+        return String.valueOf(random);
+    }
+
+    /**
+     * Clase interna que representa un código temporal con su vencimiento.
+     */
     private static class CodigoRegistro {
         private final String codigo;
         private final LocalDateTime expiracion;
@@ -54,4 +81,3 @@ public class RegistroCodigoService {
         }
     }
 }
-
