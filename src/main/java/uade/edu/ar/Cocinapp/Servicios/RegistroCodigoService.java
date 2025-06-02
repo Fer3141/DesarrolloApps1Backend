@@ -21,7 +21,7 @@ public class RegistroCodigoService {
      */
     public void generarYEnviarCodigo(String mail) {
         String codigo = generarCodigo();
-        LocalDateTime expiracion = LocalDateTime.now().plusSeconds(30);
+        LocalDateTime expiracion = LocalDateTime.now().plusMinutes(30);
 
         codigos.put(mail, new CodigoRegistro(codigo, expiracion));
         correoService.enviarCodigoVerificacion(mail, codigo);
