@@ -82,5 +82,11 @@ public class alumnos {
 		this.tramite = tramite;
 		this.cuentaCorriente = cuentaCorriente;
 	}
+
+	public alumnos() {
+		
+	}
+	
+	
 	
 }

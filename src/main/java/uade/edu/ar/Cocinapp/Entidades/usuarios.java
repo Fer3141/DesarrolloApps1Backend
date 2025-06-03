@@ -107,4 +107,8 @@ public class usuarios {
 		this.avatar = avatar;
 	}
 
+	public usuarios() {
+		// TODO Auto-generated constructor stub
+	}
+
 }

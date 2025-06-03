@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import uade.edu.ar.Cocinapp.Entidades.usuarios;
+import uade.edu.ar.Cocinapp.Entidades.alumnos;
+import uade.edu.ar.Cocinapp.Repositorios.alumnosRepo;
 import uade.edu.ar.Cocinapp.Repositorios.usuariosRepo;
 
 @Service
@@ -14,6 +16,9 @@ public class usuariosService {
 	
 	@Autowired
     private usuariosRepo ur;
+	
+	@Autowired
+    private alumnosRepo ar;
 	
 	
 	//Para inicio de sesion
@@ -29,7 +34,7 @@ public class usuariosService {
         if (!"Si".equalsIgnoreCase(usuario.getHabilitado())) {
             return "La cuenta no está habilitada.";
         }
-
+        
         if (!usuario.getPassword().equals(password)) {
             return "Contraseña incorrecta.";
         }
@@ -58,18 +63,29 @@ public class usuariosService {
     
     
     //Para habilitar usuario una vez se envie el codigo correcto
-    public usuarios habilitarUsuario(String mail) {
+    public usuarios habilitarUsuario(String mail, String user) {
         Optional<usuarios> optionalUsuario = ur.findByMail(mail);
-
-        if (optionalUsuario.isPresent()) {
-            usuarios usuario = optionalUsuario.get();
-            usuario.setHabilitado("SI");
-            return ur.save(usuario);
-        }
-
-        return null;
+        usuarios u = new usuarios();
+        u.setMail(mail);
+        u.setNickname(user);
+        u.setHabilitado("SI");
+        return ur.save(u);
     }
 
-
+    public void TerminarRegistro(Long id, boolean a, String nomb, String pass, String dni1, String dni2, String tramite, String tarjeta) {
+    	usuarios u = ur.findById(id).get();
+    	u.setNombre(nomb);
+    	u.setPassword(pass);
+    	ur.save(u);
+    	if (a==true){
+    		alumnos al = new alumnos();
+    		al.setDniFrente(dni1);
+    		al.setDniFondo(dni2);
+    		al.setTramite(tramite);
+    		al.setNumeroTarjeta(tarjeta);
+    		ar.save(al);
+    	}
+    	
+    }
 
 }
