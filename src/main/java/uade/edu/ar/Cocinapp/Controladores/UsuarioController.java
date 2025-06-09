@@ -13,6 +13,7 @@ import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
 import uade.edu.ar.Cocinapp.Repositorios.RegistroPendienteRepository;
 import uade.edu.ar.Cocinapp.Repositorios.UsuarioRepository;
 import uade.edu.ar.Cocinapp.Servicios.TokenBlacklistService;
+import uade.edu.ar.Cocinapp.Servicios.CorreoService;
 import uade.edu.ar.Cocinapp.Servicios.RegistroCodigoService;
 import uade.edu.ar.Cocinapp.Servicios.usuariosService;
 
@@ -31,6 +32,9 @@ public class UsuarioController {
 
     @Autowired
     private RegistroCodigoService codigoService;
+    
+    @Autowired
+    private CorreoService correo;
 
     @Autowired
     private TokenBlacklistService tk;
@@ -85,8 +89,9 @@ public class UsuarioController {
         rp.setAlias(alias);
         rp.setCodigoVerificacion(codigo);
         rp.setFechaExpiracion(LocalDateTime.now().plusHours(24));
+        correo.enviarCodigoVerificacion(email, codigo);
         registroPendienteRepository.save(rp);
-
+        
         System.out.println("→ Código de verificación para " + email + ": " + codigo);
 
         return ResponseEntity.ok("registro iniciado. revisá tu email.");
