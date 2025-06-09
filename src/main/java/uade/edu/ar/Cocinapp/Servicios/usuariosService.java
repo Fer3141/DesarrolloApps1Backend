@@ -31,11 +31,20 @@ public class usuariosService {
 
     // login simple
     public void login(String email, String password) {
+        email = email.trim().toLowerCase(); // ✅ normalizar
+
         Optional<Usuario> u = usuarioRepository.findByEmail(email);
         if (u.isEmpty()) {
             throw new RuntimeException("usuario no encontrado");
         }
-        if (!u.get().getPassword().equals(password)) {
+
+        Usuario usuario = u.get();
+
+        if (!usuario.isHabilitado()) {
+            throw new RuntimeException("usuario no habilitado");
+        }
+
+        if (!usuario.getPassword().equals(password)) {
             throw new RuntimeException("contraseña incorrecta");
         }
     }
@@ -95,5 +104,18 @@ public class usuariosService {
 
         // eliminamos el registro pendiente
         registroPendienteRepository.delete(registro);
+    }
+
+    public Usuario loginYDevolver(String email, String password) {
+        email = email.trim().toLowerCase();
+        Optional<Usuario> u = usuarioRepository.findByEmail(email);
+        if (u.isEmpty()) throw new RuntimeException("usuario no encontrado");
+
+        Usuario usuario = u.get();
+
+        if (!usuario.isHabilitado()) throw new RuntimeException("usuario no habilitado");
+        if (!usuario.getPassword().equals(password)) throw new RuntimeException("contraseña incorrecta");
+
+        return usuario;
     }
 }

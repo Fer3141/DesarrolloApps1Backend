@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
+import org.springframework.transaction.annotation.Transactional;
 @Service
 public class RegistroCodigoService {
 
@@ -62,6 +62,7 @@ public class RegistroCodigoService {
     /**
      * Usado en RECUPERAR CONTRASEÑA: genera código y lo guarda en la base
      */
+    @Transactional
     public void generarYGuardarCodigoRecuperacion(String mail) {
         String codigo = generarCodigo();
 

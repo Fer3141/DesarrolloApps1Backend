@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.transaction.Transactional;
 import uade.edu.ar.Cocinapp.DTO.RegistroInicialRequest;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
 import uade.edu.ar.Cocinapp.Repositorios.RegistroPendienteRepository;
@@ -43,8 +44,12 @@ public class UsuarioController {
     // login simple
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody InicioSesionRequest is) {
-        us.login(is.getMail(), is.getPassword());
-        return ResponseEntity.ok("login exitoso");
+        try {
+            var usuario = us.loginYDevolver(is.getMail(), is.getPassword());
+            return ResponseEntity.ok(usuario);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
     }
 
     // logout (simulado con blacklist)
@@ -130,15 +135,22 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no existe ese mail");
     }
 
+    @PostMapping("/auth/verificar-codigo-recuperacion")
+    public ResponseEntity<?> verificarCodigoRecuperacion(@RequestBody CodigoVerificacionRequest request) {
+        boolean valido = codigoService.verificarCodigoRecuperacion(request.getMail(), request.getCodigo());
+
+        if (valido) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("código inválido o expirado");
+        }
+    }
+
     // reseteo de contraseña - paso 2
     @PostMapping("/auth/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest r) {
         if (!us.existeMail(r.getMail())) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no existe ese mail");
-        }
-
-        if (!codigoService.verificarCodigoRecuperacion(r.getMail(), r.getCodigo())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("código inválido o expirado");
         }
 
         us.modificarPass(r.getMail(), r.getPass());
