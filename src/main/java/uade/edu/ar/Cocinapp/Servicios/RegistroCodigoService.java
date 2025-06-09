@@ -3,21 +3,28 @@ package uade.edu.ar.Cocinapp.Servicios;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import uade.edu.ar.Cocinapp.Entidades.CodigoRecuperacion;
+import uade.edu.ar.Cocinapp.Repositorios.CodigoRecuperacionRepository;
+
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class RegistroCodigoService {
 
-    // Map que almacena códigos por mail, con fecha de expiración
+    // Para verificación de registro (en memoria)
     private final Map<String, CodigoRegistro> codigos = new ConcurrentHashMap<>();
 
     @Autowired
     private CorreoService correoService;
 
+    @Autowired
+    private CodigoRecuperacionRepository codigoRecuperacionRepository;
+
     /**
-     * Genera un código aleatorio, lo guarda y simula el envío por correo.
+     * Usado en REGISTRO: genera código, lo guarda en memoria y lo "envía"
      */
     public void generarYEnviarCodigo(String mail) {
         String codigo = generarCodigo();
@@ -25,52 +32,93 @@ public class RegistroCodigoService {
 
         codigos.put(mail, new CodigoRegistro(codigo, expiracion));
         correoService.enviarCodigoVerificacion(mail, codigo);
-
         System.out.println("✔ Código generado para " + mail + ": " + codigo);
     }
 
     /**
-     * Verifica si el código ingresado es correcto y no ha expirado.
+     * Usado en REGISTRO: valida código en memoria
      */
     public String verificarCodigo(String mail, String codigoIngresado) {
         CodigoRegistro registro = codigos.get(mail);
         System.out.println("→ Buscando código para: " + mail);
 
         if (registro == null) {
-            System.out.println("❌ No hay código generado para ese mail.");
             return "NO_EXISTE";
         }
 
         if (registro.expiracion.isBefore(LocalDateTime.now())) {
-            System.out.println("❌ Código expirado para " + mail + ". Expiraba a: " + registro.expiracion);
             codigos.remove(mail);
             return "EXPIRADO";
         }
 
         if (!registro.codigo.equals(codigoIngresado)) {
-            System.out.println("❌ Código incorrecto para " + mail);
-            System.out.println("→ Código esperado: " + registro.codigo);
-            System.out.println("→ Código ingresado: " + codigoIngresado);
             return "INVALIDO";
         }
 
-        // Código correcto
         codigos.remove(mail);
-        System.out.println("✅ Código verificado correctamente para " + mail + ". Código: " + codigoIngresado);
         return "VALIDO";
     }
 
+    /**
+     * Usado en RECUPERAR CONTRASEÑA: genera código y lo guarda en la base
+     */
+    public void generarYGuardarCodigoRecuperacion(String mail) {
+        String codigo = generarCodigo();
 
+        // eliminar si ya había uno
+        codigoRecuperacionRepository.deleteByEmail(mail);
 
+        CodigoRecuperacion cr = new CodigoRecuperacion();
+        cr.setEmail(mail);
+        cr.setCodigo(codigo);
+        cr.setFechaExpiracion(LocalDateTime.now().plusMinutes(30));
+        codigoRecuperacionRepository.save(cr);
 
-    private String generarCodigo() {
-        int random = (int) (Math.random() * 900_000 + 100_000); // 6 dígitos
-        return String.valueOf(random);
+        correoService.enviarCodigoVerificacion(mail, codigo);
+        System.out.println("✔ Código de recuperación para " + mail + ": " + codigo);
     }
 
     /**
-     * Clase interna que representa un código temporal con su vencimiento.
+     * Usado en RECUPERAR CONTRASEÑA: valida el código de la base
      */
+    public boolean verificarCodigoRecuperacion(String mail, String codigoIngresado) {
+        Optional<CodigoRecuperacion> cr = codigoRecuperacionRepository.findByEmail(mail);
+        if (cr.isEmpty()) {
+            System.out.println("❌ No se encontró código en base para: " + mail);
+            return false;
+        }
+
+        CodigoRecuperacion c = cr.get();
+        System.out.println("→ Código en base: [" + c.getCodigo() + "]");
+        System.out.println("→ Ingresado: [" + codigoIngresado + "]");
+
+        // normalizamos
+        String esperado = c.getCodigo().trim();
+        String ingresado = codigoIngresado.trim();
+
+        if (!esperado.equals(ingresado)) {
+            System.out.println("❌ Códigos no coinciden");
+            return false;
+        }
+
+        if (c.getFechaExpiracion().isBefore(LocalDateTime.now())) {
+            codigoRecuperacionRepository.delete(c);
+            System.out.println("❌ Código expirado");
+            return false;
+        }
+
+        codigoRecuperacionRepository.delete(c);
+        System.out.println("✅ Código válido y eliminado");
+        return true;
+    }
+
+
+    // código aleatorio de 6 cifras
+    private String generarCodigo() {
+        return String.valueOf((int)(Math.random() * 900_000 + 100_000));
+    }
+
+    // clase para código temporal en memoria (registro)
     private static class CodigoRegistro {
         private final String codigo;
         private final LocalDateTime expiracion;

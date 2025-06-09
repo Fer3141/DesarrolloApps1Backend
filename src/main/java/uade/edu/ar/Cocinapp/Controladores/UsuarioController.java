@@ -124,7 +124,7 @@ public class UsuarioController {
     @PostMapping("/auth/recover-password")
     public ResponseEntity<?> recoverPassword(@RequestBody EmailRequest r) {
         if (us.existeMail(r.getMail())) {
-            codigoService.generarYEnviarCodigo(r.getMail());
+             codigoService.generarYGuardarCodigoRecuperacion(r.getMail());
             return ResponseEntity.ok("código enviado");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no existe ese mail");
@@ -133,12 +133,18 @@ public class UsuarioController {
     // reseteo de contraseña - paso 2
     @PostMapping("/auth/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest r) {
-        if (us.existeMail(r.getMail())) {
-            us.modificarPass(r.getMail(), r.getPass());
-            return ResponseEntity.ok("contraseña cambiada");
+        if (!us.existeMail(r.getMail())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no existe ese mail");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no existe ese mail");
-    }
+
+        if (!codigoService.verificarCodigoRecuperacion(r.getMail(), r.getCodigo())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("código inválido o expirado");
+        }
+
+        us.modificarPass(r.getMail(), r.getPass());
+        return ResponseEntity.ok("contraseña cambiada");
+}
+
 
     // ------------------- CLASES INTERNAS (recomendado mover a un paquete DTO después) -------------------
 
@@ -198,11 +204,17 @@ public class UsuarioController {
     }
 
     public static class ResetPasswordRequest {
-        private String mail;
-        private String pass;
-        public String getMail() { return mail; }
-        public void setMail(String mail) { this.mail = mail; }
-        public String getPass() { return pass; }
-        public void setPass(String pass) { this.pass = pass; }
-    }
+    private String mail;
+    private String pass;
+    private String codigo;
+
+    public String getMail() { return mail; }
+    public void setMail(String mail) { this.mail = mail; }
+
+    public String getPass() { return pass; }
+    public void setPass(String pass) { this.pass = pass; }
+
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
+}
 }
