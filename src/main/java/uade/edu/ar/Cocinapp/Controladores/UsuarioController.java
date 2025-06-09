@@ -34,7 +34,23 @@ public class UsuarioController {
         us.login(is.getMail(), is.getPassword());
         return ResponseEntity.ok(200);
     }
+<<<<<<< Updated upstream
     
+=======
+
+    // login simple
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody InicioSesionRequest is) {
+        try {
+            var usuario = us.loginYDevolver(is.getMail(), is.getPassword());
+            return ResponseEntity.ok(usuario);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(401);
+        }
+    }
+
+    // logout (simulado con blacklist)
+>>>>>>> Stashed changes
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
@@ -43,6 +59,7 @@ public class UsuarioController {
     }
 
 
+<<<<<<< Updated upstream
     @PostMapping("/auth/verificar")
     public ResponseEntity<?> verificarDisponibilidadYEnviarCodigo(@RequestBody RegistroRequest request) {
     	//System.out.println("→ LLEGO solicitud desde Android");
@@ -56,6 +73,33 @@ public class UsuarioController {
         codigoService.generarYEnviarCodigo(request.getMail());
         us.guardarUsuario(request.getMail(), request.getNickname());
         return ResponseEntity.ok(409);
+=======
+        if (usuarioRepository.existsByEmail(email)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(200);
+        }
+
+        if (registroPendienteRepository.existsByEmail(email)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(202);
+        }
+
+        if (usuarioRepository.existsByAlias(alias) || registroPendienteRepository.existsByAlias(alias)) {
+            String sugerencias = alias + "123, " + alias + "_ok, " + alias + "_2025";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("alias en uso. probá con: " + sugerencias);
+        }
+
+        String codigo = String.valueOf((int)(Math.random() * 900000) + 100000);
+        RegistroPendiente rp = new RegistroPendiente();
+        rp.setEmail(email);
+        rp.setAlias(alias);
+        rp.setCodigoVerificacion(codigo);
+        rp.setFechaExpiracion(LocalDateTime.now().plusHours(24));
+        correo.enviarCodigoVerificacion(email, codigo);
+        registroPendienteRepository.save(rp);
+        
+        System.out.println("→ Código de verificación para " + email + ": " + codigo);
+
+        return ResponseEntity.ok("registro iniciado. revisá tu email.");
+>>>>>>> Stashed changes
     }
     
 
@@ -77,6 +121,19 @@ public class UsuarioController {
             default:
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado.");
         }
+<<<<<<< Updated upstream
+=======
+
+        if (!pendiente.getCodigoVerificacion().equals(codigo)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(409);
+        }
+
+        if (pendiente.getFechaExpiracion().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.status(HttpStatus.GONE).body(400);
+        }
+
+        return ResponseEntity.ok(200);
+>>>>>>> Stashed changes
     }
     
     @PutMapping("/register")
@@ -87,6 +144,7 @@ public class UsuarioController {
     
     
     @PostMapping("/auth/recover-password")
+<<<<<<< Updated upstream
     public ResponseEntity<?> RecoverPassword(@RequestBody recuMail r) {
     	if (us.existeMail(r.getMail())) {
     	codigoService.generarYEnviarCodigo(r.getMail());
@@ -110,6 +168,37 @@ public class UsuarioController {
     	System.out.println("→ LLEGO solicitud desde Android: PONG");
         return ResponseEntity.ok("pong2");
     }
+=======
+    public ResponseEntity<?> recoverPassword(@RequestBody EmailRequest r) {
+        if (us.existeMail(r.getMail())) {
+             codigoService.generarYGuardarCodigoRecuperacion(r.getMail());
+            return ResponseEntity.ok(200);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(404);
+    }
+
+    @PostMapping("/auth/verificar-codigo-recuperacion")
+    public ResponseEntity<?> verificarCodigoRecuperacion(@RequestBody CodigoVerificacionRequest request) {
+        boolean valido = codigoService.verificarCodigoRecuperacion(request.getMail(), request.getCodigo());
+
+        if (valido) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(409);
+        }
+    }
+
+    // reseteo de contraseña - paso 2
+    @PostMapping("/auth/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest r) {
+        if (!us.existeMail(r.getMail())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(400);
+        }
+
+        us.modificarPass(r.getMail(), r.getPass());
+        return ResponseEntity.ok(200);
+}
+>>>>>>> Stashed changes
 
     
     public static class RegistroRequest {
