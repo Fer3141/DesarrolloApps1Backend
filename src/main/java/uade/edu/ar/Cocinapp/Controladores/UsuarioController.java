@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.transaction.Transactional;
+import uade.edu.ar.Cocinapp.DTO.LoginResponseDTO;
 import uade.edu.ar.Cocinapp.DTO.RegistroInicialRequest;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
 import uade.edu.ar.Cocinapp.Repositorios.RegistroPendienteRepository;
@@ -50,7 +51,9 @@ public class UsuarioController {
     public ResponseEntity<?> login(@RequestBody InicioSesionRequest is) {
         try {
             var usuario = us.loginYDevolver(is.getMail(), is.getPassword());
-            return ResponseEntity.ok(usuario);
+
+            String token = us.generarToken(usuario); // usa tu método
+            return ResponseEntity.ok(new LoginResponseDTO(token)); // devuelve el token
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }

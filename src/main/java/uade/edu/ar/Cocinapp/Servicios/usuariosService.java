@@ -1,10 +1,14 @@
 package uade.edu.ar.Cocinapp.Servicios;
 
+import java.util.Date;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
 import uade.edu.ar.Cocinapp.Entidades.Usuario;
@@ -117,5 +121,16 @@ public class usuariosService {
         if (!usuario.getPassword().equals(password)) throw new RuntimeException("contraseña incorrecta");
 
         return usuario;
+    }
+
+        public String generarToken(Usuario usuario) {
+        return Jwts.builder()
+                .setSubject(usuario.getEmail())
+                .claim("nombre", usuario.getNombre())
+                .claim("id", usuario.getId())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
+                .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256)) //  clave para el token
+                .compact();
     }
 }
