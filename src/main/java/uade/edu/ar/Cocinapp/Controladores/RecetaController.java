@@ -53,4 +53,38 @@ public class RecetaController {
         }
     }
 
+    // se agrega la receta a la lista de favoritos del usuario
+    @PostMapping("/favoritos")
+    public ResponseEntity<?> agregarAFavoritos(@RequestParam Long idUsuario, @RequestParam Long idReceta) {
+        try {
+            recetaService.agregarAFavoritos(idUsuario, idReceta);
+            return ResponseEntity.ok("agregado a favoritos");
+        } catch (Exception e) {
+            System.out.println("error al agregar favorito: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    //se obtienen los favoritos del usuario
+    @GetMapping("/favoritos")
+    public ResponseEntity<?> verFavoritos(@RequestParam Long usuario) {
+        try {
+            return ResponseEntity.ok(recetaService.obtenerFavoritos(usuario));
+        } catch (Exception e) {
+            System.out.println("error al obtener favoritos: " + e.getMessage());
+            return ResponseEntity.status(500).body("error interno");
+        }
+    }
+
+    //eliminar una receta de favoritos
+    @DeleteMapping("/favoritos")
+    public ResponseEntity<?> eliminarFavorito(@RequestParam Long idUsuario, @RequestParam Long idReceta) {
+        try {
+            recetaService.eliminarFavorito(idUsuario, idReceta);
+            return ResponseEntity.ok("receta eliminada de favoritos");
+        } catch (Exception e) {
+            System.out.println("error al eliminar favorito: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

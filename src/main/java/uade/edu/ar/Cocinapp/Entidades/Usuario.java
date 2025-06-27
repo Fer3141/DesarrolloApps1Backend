@@ -10,7 +10,7 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idUsuario")
-    private Long id;
+    private Long idUsuario;
 
     @Column(name = "mail", nullable = false, unique = true)
     private String email;
@@ -35,8 +35,8 @@ public class Usuario {
 
     // getters y setters
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getIdUsuario() {return idUsuario;}
+    public void setIdUsuario(Long idUsuario) {this.idUsuario = idUsuario;}
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

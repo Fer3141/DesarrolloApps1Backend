@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uade.edu.ar.Cocinapp.DTO.*;
 import uade.edu.ar.Cocinapp.Entidades.*;
 import uade.edu.ar.Cocinapp.Repositorios.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -31,6 +32,9 @@ public class recetasService {
 
     @Autowired
     private MultimediaRepository multimediaRepo;
+
+    @Autowired
+    private RecetaFavoritaRepository favoritaRepo;
 
     // metodo para guardar una receta completa
     public void guardarRecetaCompleta(RecetaDTO dto) {
@@ -129,6 +133,7 @@ public class recetasService {
         return resultado;
     }
 
+    // obtenemos el detalle de la receta segun el id
     public RecetaDetalleDTO obtenerDetallePorId(Long id) {
         recetas receta = recetaRepo.findById(id).orElseThrow(() ->
                 new RuntimeException("receta no encontrada"));
@@ -179,5 +184,49 @@ public class recetasService {
         return dto;
     }
 
+    //Agregar una receta a favoritos
+    public void agregarAFavoritos(Long idUsuario, Long idReceta) {
+        if (favoritaRepo.existsByUsuario_IdUsuarioAndReceta_IdReceta(idUsuario, idReceta)) {
+            throw new RuntimeException("la receta ya está en favoritos");
+        }
+
+        Usuario usuario = usuarioRepo.findById(idUsuario).orElseThrow(() -> new RuntimeException("usuario no encontrado"));
+        recetas receta = recetaRepo.findById(idReceta).orElseThrow(() -> new RuntimeException("receta no encontrada"));
+
+        RecetaFavorita fav = new RecetaFavorita();
+        fav.setUsuario(usuario);
+        fav.setReceta(receta);
+
+        favoritaRepo.save(fav);
+    }
+
+    //Obtener lista de favoritos por usuario
+    public List<RecetaResumenDTO> obtenerFavoritos(Long idUsuario) {
+        List<RecetaFavorita> favoritos = favoritaRepo.findByUsuario_IdUsuario(idUsuario);
+
+        List<RecetaResumenDTO> resultado = new ArrayList<>();
+        for (RecetaFavorita f : favoritos) {
+            recetas r = f.getReceta();
+            resultado.add(new RecetaResumenDTO(
+                r.getIdReceta(),
+                r.getNombreReceta(),
+                r.getFotoPrincipal(),
+                r.getUsuario().getAlias()
+            ));
+        }
+
+        return resultado;
+    }
+
+    //eliminar de favoritos una receta
+    @Transactional
+    public void eliminarFavorito(Long idUsuario, Long idReceta) {
+        if (!favoritaRepo.existsByUsuario_IdUsuarioAndReceta_IdReceta(idUsuario, idReceta)) {
+            throw new RuntimeException("la receta no está en favoritos");
+        }
+
+        favoritaRepo.deleteByUsuario_IdUsuarioAndReceta_IdReceta(idUsuario, idReceta);
+        System.out.println("favorito eliminado correctamente");
+    }
 }
 

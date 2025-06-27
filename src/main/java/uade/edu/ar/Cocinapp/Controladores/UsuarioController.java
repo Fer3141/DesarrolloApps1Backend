@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.transaction.Transactional;
 import uade.edu.ar.Cocinapp.DTO.LoginResponseDTO;
 import uade.edu.ar.Cocinapp.DTO.RegistroInicialRequest;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
