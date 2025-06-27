@@ -104,4 +104,80 @@ public class recetasService {
 
         System.out.println("pasos y multimedia cargados correctamente");
     }
+
+    // metodo para buscar recetas por nombre parcial (o traer todas si no se pasa nada)
+    public List<RecetaResumenDTO> buscarRecetasPorNombre(String nombre) {
+        List<recetas> lista;
+
+        if (nombre == null || nombre.isEmpty()) {
+            lista = recetaRepo.findAll(); // si no se pasa nombre, trae todas
+        } else {
+            lista = recetaRepo.findByNombreRecetaContainingIgnoreCaseOrderByIdRecetaDesc(nombre);
+        }
+
+        List<RecetaResumenDTO> resultado = new ArrayList<>();
+
+        for (recetas r : lista) {
+            resultado.add(new RecetaResumenDTO(
+                r.getIdReceta(),
+                r.getNombreReceta(),
+                r.getFotoPrincipal(),
+                r.getUsuario().getAlias() // si queremos mostrar el alias
+            ));
+        }
+
+        return resultado;
+    }
+
+    public RecetaDetalleDTO obtenerDetallePorId(Long id) {
+        recetas receta = recetaRepo.findById(id).orElseThrow(() ->
+                new RuntimeException("receta no encontrada"));
+
+        RecetaDetalleDTO dto = new RecetaDetalleDTO();
+        dto.idReceta = receta.getIdReceta();
+        dto.nombreReceta = receta.getNombreReceta();
+        dto.descripcionReceta = receta.getDescripcionReceta();
+        dto.fotoPrincipal = receta.getFotoPrincipal();
+        dto.porciones = receta.getPorciones();
+        dto.cantidadPersonas = receta.getCantidadPersonas();
+        dto.idTipo = receta.getIdTipo();
+        dto.nombreUsuario = receta.getUsuario().getAlias();
+
+        // ingredientes usados en la receta
+        List<Utilizado> usados = utilizadoRepo.findByReceta_IdReceta(id);
+        dto.ingredientes = new ArrayList<>();
+        for (Utilizado u : usados) {
+            IngredienteDTO ing = new IngredienteDTO();
+            ing.nombre = u.getIngrediente().getNombre();
+            ing.cantidad = u.getCantidad();
+            ing.unidad = u.getUnidad().getDescripcion();
+            ing.observaciones = u.getObservaciones();
+            dto.ingredientes.add(ing);
+        }
+
+        // pasos con multimedia
+        List<pasos> pasos = pasoRepo.findByReceta_IdRecetaOrderByNroPasoAsc(id);
+        dto.pasos = new ArrayList<>();
+        for (pasos p : pasos) {
+            PasoCompletoDTO pasoDTO = new PasoCompletoDTO();
+            pasoDTO.nroPaso = p.getNroPaso();
+            pasoDTO.texto = p.getTexto();
+
+            List<Multimedia> medios = multimediaRepo.findByPaso_IdPaso(p.getIdPaso());
+            pasoDTO.multimedia = new ArrayList<>();
+            for (Multimedia m : medios) {
+                MultimediaDTO mediaDTO = new MultimediaDTO();
+                mediaDTO.tipo = m.getTipo_contenido();
+                mediaDTO.extension = m.getExtension();
+                mediaDTO.url = m.getUrlContenido();
+                pasoDTO.multimedia.add(mediaDTO);
+            }
+
+            dto.pasos.add(pasoDTO);
+        }
+
+        return dto;
+    }
+
 }
+
