@@ -5,18 +5,22 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "recetas")
-public class recetas {
+public class Receta {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idReceta")
 	private Long idReceta;
 	
-	private Long idUsuario;
+	@ManyToOne
+	@JoinColumn(name = "idUsuario") // este es el nombre de la columna en la tabla
+	private Usuario usuario;
 	
 	private String nombreReceta;
 	
@@ -38,13 +42,6 @@ public class recetas {
 		this.idReceta = idReceta;
 	}
 
-	public Long getIdUsuario() {
-		return idUsuario;
-	}
-
-	public void setIdUsuario(Long idUsuario) {
-		this.idUsuario = idUsuario;
-	}
 
 	public String getNombreReceta() {
 		return nombreReceta;
@@ -94,9 +91,15 @@ public class recetas {
 		this.idTipo = idTipo;
 	}
 
-	public recetas() {
+	public Receta() {
 		
 	}
 
+	public Usuario getUsuario() {
+    return usuario;
+}
 
+	public void setUsuario(Usuario usuario) {
+		this.usuario = usuario;
+	}
 }

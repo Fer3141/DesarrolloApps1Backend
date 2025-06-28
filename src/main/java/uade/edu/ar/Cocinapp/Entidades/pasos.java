@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -16,7 +18,9 @@ public class pasos {
     @Column(name = "idPaso")
 	private Long idPaso;
 	
-	private Long idReceta;
+	@ManyToOne
+	@JoinColumn(name = "idReceta")
+	private Receta receta;
 	
 	private int nroPaso;
 	
@@ -30,12 +34,12 @@ public class pasos {
 		this.idPaso = idPaso;
 	}
 
-	public Long getIdReceta() {
-		return idReceta;
+	public Receta getReceta() {
+		return receta;
 	}
 
-	public void setIdReceta(Long idReceta) {
-		this.idReceta = idReceta;
+	public void setReceta(Receta receta) {
+		this.receta = receta;
 	}
 
 	public int getNroPaso() {
