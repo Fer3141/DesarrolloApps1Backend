@@ -21,6 +21,6 @@ public class RecetaFavorita {
 
     @ManyToOne
     @JoinColumn(name = "idReceta")
-    private recetas receta;
+    private Receta receta;
 }
 

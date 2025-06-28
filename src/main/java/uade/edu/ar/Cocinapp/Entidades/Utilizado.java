@@ -14,7 +14,7 @@ public class Utilizado {
 
     @ManyToOne
     @JoinColumn(name = "idReceta")
-    private recetas receta;
+    private Receta receta;
 
     @ManyToOne
     @JoinColumn(name = "idIngrediente")

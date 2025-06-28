@@ -44,7 +44,7 @@ public class recetasService {
                 new RuntimeException("usuario no encontrado"));
 
         // creamos y guardamos la receta principal
-        recetas receta = new recetas();
+        Receta receta = new Receta();
         receta.setUsuario(usuario);
         receta.setNombreReceta(dto.nombreReceta);
         receta.setDescripcionReceta(dto.descripcionReceta);
@@ -111,7 +111,7 @@ public class recetasService {
 
     // metodo para buscar recetas por nombre parcial (o traer todas si no se pasa nada)
     public List<RecetaResumenDTO> buscarRecetasPorNombre(String nombre) {
-        List<recetas> lista;
+        List<Receta> lista;
 
         if (nombre == null || nombre.isEmpty()) {
             lista = recetaRepo.findAll(); // si no se pasa nombre, trae todas
@@ -121,7 +121,7 @@ public class recetasService {
 
         List<RecetaResumenDTO> resultado = new ArrayList<>();
 
-        for (recetas r : lista) {
+        for (Receta r : lista) {
             resultado.add(new RecetaResumenDTO(
                 r.getIdReceta(),
                 r.getNombreReceta(),
@@ -135,7 +135,7 @@ public class recetasService {
 
     // obtenemos el detalle de la receta segun el id
     public RecetaDetalleDTO obtenerDetallePorId(Long id) {
-        recetas receta = recetaRepo.findById(id).orElseThrow(() ->
+        Receta receta = recetaRepo.findById(id).orElseThrow(() ->
                 new RuntimeException("receta no encontrada"));
 
         RecetaDetalleDTO dto = new RecetaDetalleDTO();
@@ -191,7 +191,7 @@ public class recetasService {
         }
 
         Usuario usuario = usuarioRepo.findById(idUsuario).orElseThrow(() -> new RuntimeException("usuario no encontrado"));
-        recetas receta = recetaRepo.findById(idReceta).orElseThrow(() -> new RuntimeException("receta no encontrada"));
+        Receta receta = recetaRepo.findById(idReceta).orElseThrow(() -> new RuntimeException("receta no encontrada"));
 
         RecetaFavorita fav = new RecetaFavorita();
         fav.setUsuario(usuario);
@@ -206,7 +206,7 @@ public class recetasService {
 
         List<RecetaResumenDTO> resultado = new ArrayList<>();
         for (RecetaFavorita f : favoritos) {
-            recetas r = f.getReceta();
+            Receta r = f.getReceta();
             resultado.add(new RecetaResumenDTO(
                 r.getIdReceta(),
                 r.getNombreReceta(),

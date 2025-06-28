@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "recetas")
-public class recetas {
+public class Receta {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -91,7 +91,7 @@ public class recetas {
 		this.idTipo = idTipo;
 	}
 
-	public recetas() {
+	public Receta() {
 		
 	}
 

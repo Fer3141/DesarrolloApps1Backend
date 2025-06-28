@@ -20,7 +20,7 @@ public class pasos {
 	
 	@ManyToOne
 	@JoinColumn(name = "idReceta")
-	private recetas receta;
+	private Receta receta;
 	
 	private int nroPaso;
 	
@@ -34,11 +34,11 @@ public class pasos {
 		this.idPaso = idPaso;
 	}
 
-	public recetas getReceta() {
+	public Receta getReceta() {
 		return receta;
 	}
 
-	public void setReceta(recetas receta) {
+	public void setReceta(Receta receta) {
 		this.receta = receta;
 	}
 
