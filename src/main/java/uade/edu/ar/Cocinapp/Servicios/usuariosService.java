@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.transaction.Transactional;
+import uade.edu.ar.Cocinapp.DTO.DatosAlumnoDTO;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
 import uade.edu.ar.Cocinapp.Entidades.Usuario;
@@ -160,6 +162,35 @@ public class usuariosService {
 			return usuarioRepository.findById(idUsuario)
 			        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 		}
+
+		@Transactional
+		public void convertirEnAlumno(Long idUsuario, DatosAlumnoDTO datos) {
+		    Usuario u = usuarioRepository.findById(idUsuario)
+		        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+		    System.out.println("Usuario encontrado: " + u.getNombre());
+		    
+		    // Evitar duplicado
+		    if (alumnoRepository.existsById(idUsuario)) {
+		        throw new RuntimeException("Ya sos alumno");
+		    }
+
+		    Alumno a = new Alumno();
+		    a.setIdUsuario(u.getIdUsuario()); // ID compartido
+		    a.setFotoDniFrente(datos.getFotoDniFrente());
+		    a.setFotoDniDorso(datos.getFotoDniDorso());
+		    a.setNroTramiteDni(datos.getNroTramiteDni());
+		    a.setNumeroTarjeta(datos.getNumeroTarjeta());
+
+		    try {
+		        a.setCuentaCorriente(Float.parseFloat(datos.getCuentaCorriente()));
+		    } catch (NumberFormatException e) {
+		        a.setCuentaCorriente(0f);
+		    }
+
+		    alumnoRepository.save(a);
+		}
+
 
 
 }

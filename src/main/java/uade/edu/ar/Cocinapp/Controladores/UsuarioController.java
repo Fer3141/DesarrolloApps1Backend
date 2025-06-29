@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import uade.edu.ar.Cocinapp.DTO.DatosAlumnoDTO;
 import uade.edu.ar.Cocinapp.DTO.LoginResponseDTO;
 import uade.edu.ar.Cocinapp.DTO.PerfilDTO;
 import uade.edu.ar.Cocinapp.DTO.RegistroInicialRequest;
@@ -263,6 +264,38 @@ public class UsuarioController {
         System.out.println("ID del token → " + claims.get("id")); 
         return Long.parseLong(claims.get("id").toString());
     }
+    
+    
+    @PutMapping("/hacer-alumno")
+    public ResponseEntity<String> convertirEnAlumno(@RequestHeader("Authorization") String authHeader,
+                                                    @RequestBody DatosAlumnoDTO datos) {
+        try {
+        	String json = authHeader.replace("AuthBearer ", "").trim();
+
+            String token = json.split(":")[1]
+                               .replace("\"", "")
+                               .replace("}", "")
+                               .trim();
+
+            System.out.println("TOKEN EXTRAÍDO → " + token);
+
+            Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+            Long idUsuario = Long.parseLong(claims.get("id").toString());
+            System.out.println("ID extraído del token: " + idUsuario);
+            
+            us.convertirEnAlumno(idUsuario, datos);
+            return ResponseEntity.ok("Ahora sos alumno");
+        } catch (Exception e) {
+            System.out.println("⚠️ Error en /hacer-alumno: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
+        }
+    }
+
 
 
 
