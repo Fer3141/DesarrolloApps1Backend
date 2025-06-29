@@ -240,6 +240,7 @@ public class UsuarioController {
             PerfilDTO dto = new PerfilDTO();
             dto.setNombre(usuario.getNombre());
             dto.setBiografia(usuario.getBiografia());
+            dto.setAlias(usuario.getAlias());
 
             return ResponseEntity.ok()
                     .header("Content-Type", "application/json") // ✅ fuerza a JSON
@@ -270,8 +271,8 @@ public class UsuarioController {
     public ResponseEntity<String> convertirEnAlumno(@RequestHeader("Authorization") String authHeader,
                                                     @RequestBody DatosAlumnoDTO datos) {
         try {
-        	String json = authHeader.replace("AuthBearer ", "").trim();
-
+            // 1. Extraer el token
+            String json = authHeader.replace("AuthBearer ", "").trim();
             String token = json.split(":")[1]
                                .replace("\"", "")
                                .replace("}", "")
@@ -279,6 +280,7 @@ public class UsuarioController {
 
             System.out.println("TOKEN EXTRAÍDO → " + token);
 
+            // 2. Extraer el ID del usuario desde el token
             Claims claims = Jwts.parserBuilder()
                 .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()))
                 .build()
@@ -287,14 +289,31 @@ public class UsuarioController {
 
             Long idUsuario = Long.parseLong(claims.get("id").toString());
             System.out.println("ID extraído del token: " + idUsuario);
-            
+
+            // 3. Obtener los datos actuales del usuario
+            Usuario usuario = us.obtenerUsuario(idUsuario);
+
+            // 4. Copiar campos heredados necesarios para la conversión
+            datos.setAlias(usuario.getAlias());
+            datos.setEmail(usuario.getEmail());
+            datos.setPassword(usuario.getPassword());
+            datos.setNombre(usuario.getNombre());
+            datos.setDireccion(usuario.getDireccion());
+            datos.setAvatar(usuario.getAvatar());
+            datos.setBiografia(usuario.getBiografia());
+
+            // 5. Llamar al servicio
+           
             us.convertirEnAlumno(idUsuario, datos);
+
             return ResponseEntity.ok("Ahora sos alumno");
+
         } catch (Exception e) {
             System.out.println("⚠️ Error en /hacer-alumno: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
+
 
 
 
