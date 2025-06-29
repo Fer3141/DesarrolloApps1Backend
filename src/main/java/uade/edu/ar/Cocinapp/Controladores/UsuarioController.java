@@ -205,7 +205,7 @@ public class UsuarioController {
     }
 
     @ResponseBody
-    @GetMapping(value = "/obtener-perfil", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/obtener-perfil", produces = "application/json")
     public ResponseEntity<?> obtenerBiografia(@RequestHeader("Authorization") String authHeader) {
         try {
             System.out.println("INGRESA Obtener");
@@ -240,8 +240,9 @@ public class UsuarioController {
             dto.setNombre(usuario.getNombre());
             dto.setBiografia(usuario.getBiografia());
 
-            return ResponseEntity.ok(dto);
-           // return ResponseEntity.ok(bio);
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/json") // ✅ fuerza a JSON
+                    .body(dto);           // return ResponseEntity.ok(bio);
 
         } catch (Exception e) {
             e.printStackTrace();
