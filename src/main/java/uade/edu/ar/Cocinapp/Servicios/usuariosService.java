@@ -156,5 +156,10 @@ public class usuariosService {
             return usuario.getBiografia() != null ? usuario.getBiografia() : "";
         }
 
+		public Usuario obtenerUsuario(Long idUsuario) {
+			return usuarioRepository.findById(idUsuario)
+			        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+		}
+
 
 }

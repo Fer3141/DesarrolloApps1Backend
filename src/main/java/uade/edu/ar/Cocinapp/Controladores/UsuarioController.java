@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import uade.edu.ar.Cocinapp.DTO.LoginResponseDTO;
+import uade.edu.ar.Cocinapp.DTO.PerfilDTO;
 import uade.edu.ar.Cocinapp.DTO.RegistroInicialRequest;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
+import uade.edu.ar.Cocinapp.Entidades.Usuario;
 import uade.edu.ar.Cocinapp.Repositorios.RegistroPendienteRepository;
 import uade.edu.ar.Cocinapp.Repositorios.UsuarioRepository;
 import uade.edu.ar.Cocinapp.Servicios.TokenBlacklistService;
@@ -202,9 +204,9 @@ public class UsuarioController {
         }
     }
 
-    
-    @GetMapping(value = "/obtener-biografia", produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> obtenerBiografia(@RequestHeader("Authorization") String authHeader) {
+    @ResponseBody
+    @GetMapping(value = "/obtener-perfil", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<?> obtenerBiografia(@RequestHeader("Authorization") String authHeader) {
         try {
             System.out.println("INGRESA Obtener");
             System.out.println("AuthHeader → " + authHeader);
@@ -228,8 +230,18 @@ public class UsuarioController {
             Long idUsuario = Long.parseLong(claims.get("id").toString());
             System.out.println("ID extraído del token: " + idUsuario);
 
-            String bio = us.obtenerBiografia(idUsuario);
-            return ResponseEntity.ok(bio);
+           //String bio = us.obtenerBiografia(idUsuario);
+            Usuario usuario = us.obtenerUsuario(idUsuario);
+            System.out.println("user name:" + usuario.getNombre());
+            System.out.println("user get biografia" + usuario.getBiografia());
+            
+            
+            PerfilDTO dto = new PerfilDTO();
+            dto.setNombre(usuario.getNombre());
+            dto.setBiografia(usuario.getBiografia());
+
+            return ResponseEntity.ok(dto);
+           // return ResponseEntity.ok(bio);
 
         } catch (Exception e) {
             e.printStackTrace();
