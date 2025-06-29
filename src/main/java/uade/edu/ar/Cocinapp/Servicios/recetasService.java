@@ -52,8 +52,8 @@ public class recetasService {
         receta.setCantidadPersonas(dto.cantidadPersonas);
         receta.setFotoPrincipal(dto.fotoPrincipal);
         receta.setIdTipo(dto.idTipo);
+        
 
-        receta = recetaRepo.save(receta);
         System.out.println("receta guardada con id: " + receta.getIdReceta());
 
         // guardamos los ingredientes utilizados
@@ -72,6 +72,8 @@ public class recetasService {
                 nueva.setDescripcion(ing.unidad);
                 return unidadRepo.save(nueva);
             });
+
+            receta = recetaRepo.save(receta);
 
             // creamos el objeto utilizado
             Utilizado usado = new Utilizado();

@@ -1,5 +1,8 @@
 package uade.edu.ar.Cocinapp.Entidades;
 
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,8 +10,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
+
+@Getter
+@Setter
 @Entity
 @Table(name = "recetas")
 public class Receta {
@@ -22,14 +31,18 @@ public class Receta {
 	@JoinColumn(name = "idUsuario") // este es el nombre de la columna en la tabla
 	private Usuario usuario;
 	
+	@Column(name = "nombreReceta")
 	private String nombreReceta;
 	
+	@Column(name = "descripcionReceta")
 	private String descripcionReceta;
 	
 	private String fotoPrincipal;
 	
+	@Column(name = "porciones")
 	private int porciones;
 	
+	@Column(name = "cantidadPersonas")
 	private int cantidadPersonas;
 	
 	private int idTipo;
@@ -102,4 +115,6 @@ public class Receta {
 	public void setUsuario(Usuario usuario) {
 		this.usuario = usuario;
 	}
+	
+	
 }

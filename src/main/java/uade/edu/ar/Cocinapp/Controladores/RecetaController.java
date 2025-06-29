@@ -27,7 +27,7 @@ public class RecetaController {
     private usuariosService us;
 
     // endpoint para carga unificada de receta
-    @PostMapping
+    @PostMapping("/crear")
     public ResponseEntity<?> crearReceta(@RequestHeader("Authorization") String authHeader, @RequestBody RecetaDTO recetaDTO) {
         try {
         	System.out.println("Token recibido: " + authHeader);
