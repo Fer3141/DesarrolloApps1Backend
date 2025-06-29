@@ -5,10 +5,16 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import uade.edu.ar.Cocinapp.DTO.RecetaDTO;
 import uade.edu.ar.Cocinapp.DTO.RecetaDetalleDTO;
 import uade.edu.ar.Cocinapp.DTO.RecetaResumenDTO;
+import uade.edu.ar.Cocinapp.Entidades.Usuario;
 import uade.edu.ar.Cocinapp.Servicios.recetasService;
+import uade.edu.ar.Cocinapp.Servicios.usuariosService;
 
 @RestController
 @RequestMapping("/recetas")
@@ -16,11 +22,38 @@ public class RecetaController {
 
     @Autowired
     private recetasService recetaService;
+    
+    @Autowired
+    private usuariosService us;
 
     // endpoint para carga unificada de receta
     @PostMapping
-    public ResponseEntity<?> crearReceta(@RequestBody RecetaDTO recetaDTO) {
+    public ResponseEntity<?> crearReceta(@RequestHeader("Authorization") String authHeader, @RequestBody RecetaDTO recetaDTO) {
         try {
+        	System.out.println("Token recibido: " + authHeader);
+        	
+        	String json = authHeader.replace("AuthBearer ", "").trim();
+            String token = json.split(":")[1]
+                               .replace("\"", "")
+                               .replace("}", "")
+                               .trim();
+
+            System.out.println("TOKEN EXTRAÍDO → " + token);
+
+            // 2. Extraer el ID del usuario desde el token
+            Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+            Long idUsuario = Long.parseLong(claims.get("id").toString());
+            System.out.println("ID extraído del token: " + idUsuario);
+
+            // 3. Obtener los datos actuales del usuario
+            Usuario usuario = us.obtenerUsuario(idUsuario);
+            recetaDTO.setIdUsuario(idUsuario);
+        	
             recetaService.guardarRecetaCompleta(recetaDTO);
             return ResponseEntity.ok("receta creada correctamente");
         } catch (Exception e) {
