@@ -8,11 +8,13 @@ public class RecetaResumenDTO {
     public String nombreReceta;        // nombre del plato
     public String fotoPrincipal;       // url de la imagen
     public String nombreUsuario;       // nickname del autor
+    public double promedio; // nuevo campo para que moestremos el promedio de las valoraciones en el feed
 
-    public RecetaResumenDTO(Long id, String nombre, String foto, String usuario) {
+    public RecetaResumenDTO(Long id, String nombre, String foto, String usuario, double promedio) {
         this.idReceta = id;
         this.nombreReceta = nombre;
         this.fotoPrincipal = foto;
         this.nombreUsuario = usuario;
+        this.promedio = promedio;
     }
 }

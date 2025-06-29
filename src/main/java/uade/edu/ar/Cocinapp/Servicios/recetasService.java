@@ -36,6 +36,9 @@ public class recetasService {
     @Autowired
     private RecetaFavoritaRepository favoritaRepo;
 
+    @Autowired
+    private CalificacionRepository calificacionRepo;
+
     // metodo para guardar una receta completa
     public void guardarRecetaCompleta(RecetaDTO dto) {
 
@@ -122,11 +125,25 @@ public class recetasService {
         List<RecetaResumenDTO> resultado = new ArrayList<>();
 
         for (Receta r : lista) {
+
+            // aca traigo todas las valoraciones de esta receta
+            List<Calificacion> calificaciones = calificacionRepo.findAll().stream()
+                    .filter(c -> c.getReceta().getIdReceta().equals(r.getIdReceta()))
+                    .toList();
+
+            // aca saco el promedio de las calificaciones, si no tiene ninguna devuelvo 0
+            double promedio = calificaciones.stream()
+                    .mapToInt(Calificacion::getCalificacion)
+                    .average()
+                    .orElse(0);
+
+            // armo el dto con alias y promedio incluido
             resultado.add(new RecetaResumenDTO(
                 r.getIdReceta(),
                 r.getNombreReceta(),
                 r.getFotoPrincipal(),
-                r.getUsuario().getAlias() // si queremos mostrar el alias
+                r.getUsuario().getAlias(),
+                promedio
             ));
         }
 
@@ -200,23 +217,39 @@ public class recetasService {
         favoritaRepo.save(fav);
     }
 
-    //Obtener lista de favoritos por usuario
+    // devuelve la lista de recetas que el usuario guardó como favoritas
     public List<RecetaResumenDTO> obtenerFavoritos(Long idUsuario) {
-        List<RecetaFavorita> favoritos = favoritaRepo.findByUsuario_IdUsuario(idUsuario);
+        List<RecetaFavorita> favoritos = favoritaRepo.findByUsuario_IdUsuario(idUsuario); //traigo el user
 
         List<RecetaResumenDTO> resultado = new ArrayList<>();
+
         for (RecetaFavorita f : favoritos) {
             Receta r = f.getReceta();
+
+            // aca traigo todas las valoraciones de esta receta
+            List<Calificacion> calificaciones = calificacionRepo.findAll().stream()
+                    .filter(c -> c.getReceta().getIdReceta().equals(r.getIdReceta()))
+                    .toList();
+
+            // saco el promedio de calificaciones, si no tiene ninguna devuelvo 0
+            double promedio = calificaciones.stream()
+                    .mapToInt(Calificacion::getCalificacion)
+                    .average()
+                    .orElse(0);
+
+            // armo el dto con alias y promedio incluido
             resultado.add(new RecetaResumenDTO(
                 r.getIdReceta(),
                 r.getNombreReceta(),
                 r.getFotoPrincipal(),
-                r.getUsuario().getAlias()
+                r.getUsuario().getAlias(),
+                promedio
             ));
         }
 
         return resultado;
     }
+
 
     //eliminar de favoritos una receta
     @Transactional

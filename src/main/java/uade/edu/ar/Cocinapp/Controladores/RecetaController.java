@@ -17,6 +17,7 @@ public class RecetaController {
     @Autowired
     private recetasService recetaService;
 
+
     // endpoint para carga unificada de receta
     @PostMapping
     public ResponseEntity<?> crearReceta(@RequestBody RecetaDTO recetaDTO) {
