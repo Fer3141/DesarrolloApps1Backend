@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import uade.edu.ar.Cocinapp.DTO.DatosAlumnoDTO;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
@@ -29,6 +31,9 @@ public class usuariosService {
 
     @Autowired
     private RegistroPendienteRepository registroPendienteRepository;
+    
+    @PersistenceContext
+    private EntityManager em;
 
     // metodo para verificar si un email ya está registrado
     public boolean existeMail(String email) {
@@ -165,31 +170,34 @@ public class usuariosService {
 
 		@Transactional
 		public void convertirEnAlumno(Long idUsuario, DatosAlumnoDTO datos) {
-		    Usuario u = usuarioRepository.findById(idUsuario)
+		    Usuario usuarioExistente = usuarioRepository.findById(idUsuario)
 		        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-		    System.out.println("Usuario encontrado: " + u.getNombre());
-		    
-		    // Evitar duplicado
 		    if (alumnoRepository.existsById(idUsuario)) {
 		        throw new RuntimeException("Ya sos alumno");
 		    }
 
-		    Alumno a = new Alumno();
-		    a.setIdUsuario(u.getIdUsuario()); // ID compartido
-		    a.setFotoDniFrente(datos.getFotoDniFrente());
-		    a.setFotoDniDorso(datos.getFotoDniDorso());
-		    a.setNroTramiteDni(datos.getNroTramiteDni());
-		    a.setNumeroTarjeta(datos.getNumeroTarjeta());
+		    Alumno alumno = new Alumno();
+		    alumno.setIdUsuario(usuarioExistente.getIdUsuario()); // clave
+		    alumno.setAlias(usuarioExistente.getAlias());
+		    alumno.setEmail(usuarioExistente.getEmail());
+		    alumno.setPassword(usuarioExistente.getPassword());
+		    alumno.setNombre(usuarioExistente.getNombre());
+		    alumno.setDireccion(usuarioExistente.getDireccion());
+		    alumno.setAvatar(usuarioExistente.getAvatar());
+		    alumno.setBiografia(usuarioExistente.getBiografia());
+		    alumno.setHabilitado(usuarioExistente.isHabilitado());
 
-		    try {
-		        a.setCuentaCorriente(Float.parseFloat(datos.getCuentaCorriente()));
-		    } catch (NumberFormatException e) {
-		        a.setCuentaCorriente(0f);
-		    }
+		    alumno.setNroTramiteDni(datos.getNroTramiteDni());
+		    alumno.setNumeroTarjeta(datos.getNumeroTarjeta());
+		    alumno.setCuentaCorriente(0f);
 
-		    alumnoRepository.save(a);
+		    // 👇 Este paso hace la diferencia
+		    alumnoRepository.saveAndFlush(alumno); // save() a veces no sincroniza bien con herencia
 		}
+
+
+
 
 
 

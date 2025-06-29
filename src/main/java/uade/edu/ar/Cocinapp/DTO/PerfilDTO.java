@@ -13,7 +13,7 @@ public class PerfilDTO {
 	}
 	private String nombre;
     private String biografia;
-	
+	private String alias;
      
 	
 }

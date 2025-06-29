@@ -14,6 +14,13 @@ public class DatosAlumnoDTO {
     public String nroTramiteDni;
     public String numeroTarjeta;
     public String cuentaCorriente;
+    public String alias;
+    public String email;
+    public String password;
+    public String biografia;
+    public String nombre;
+    public String direccion;
+    public String avatar;
 	public DatosAlumnoDTO() {
 		super();
 	}
