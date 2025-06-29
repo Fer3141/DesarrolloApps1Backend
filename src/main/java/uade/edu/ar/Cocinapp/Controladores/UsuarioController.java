@@ -4,9 +4,11 @@ import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import uade.edu.ar.Cocinapp.DTO.LoginResponseDTO;
 import uade.edu.ar.Cocinapp.DTO.RegistroInicialRequest;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
@@ -16,6 +18,8 @@ import uade.edu.ar.Cocinapp.Servicios.TokenBlacklistService;
 import uade.edu.ar.Cocinapp.Servicios.CorreoService;
 import uade.edu.ar.Cocinapp.Servicios.RegistroCodigoService;
 import uade.edu.ar.Cocinapp.Servicios.usuariosService;
+import org.json.JSONObject;
+
 
 @RestController
 @RequestMapping("/api")
@@ -52,6 +56,7 @@ public class UsuarioController {
             var usuario = us.loginYDevolver(is.getMail(), is.getPassword());
 
             String token = us.generarToken(usuario); // usa tu método
+            System.out.println("Token generado del login:" + token);
             return ResponseEntity.ok(new LoginResponseDTO(token)); // devuelve el token
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
@@ -163,6 +168,90 @@ public class UsuarioController {
         us.modificarPass(r.getMail(), r.getPass());
         return ResponseEntity.ok("contraseña cambiada");
 }
+    
+    @PutMapping("/editar-biografia")
+    public ResponseEntity<?> editarBiografia(@RequestHeader("Authorization") String authHeader, @RequestParam String biografia) {
+        try {
+            System.out.println("INGRESA EDITAR");
+
+            String json = authHeader.replace("AuthBearer ", "").trim();
+
+            // Extraer el string del token
+            String token = json.split(":")[1]
+                               .replace("\"", "")
+                               .replace("}", "")
+                               .trim();
+
+            System.out.println("TOKEN EXTRAÍDO → " + token);
+
+            Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+            Long idUsuario = Long.parseLong(claims.get("id").toString());
+            System.out.println("ID extraído del token: " + idUsuario);
+
+            
+            
+            us.editarBiografia(idUsuario, biografia);
+            return ResponseEntity.ok("Biografía actualizada con éxito");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    
+    @GetMapping(value = "/obtener-biografia", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> obtenerBiografia(@RequestHeader("Authorization") String authHeader) {
+        try {
+            System.out.println("INGRESA Obtener");
+            System.out.println("AuthHeader → " + authHeader);
+
+            String json = authHeader.replace("AuthBearer ", "").trim();
+
+            // Extraer el string del token
+            String token = json.split(":")[1]
+                               .replace("\"", "")
+                               .replace("}", "")
+                               .trim();
+
+            System.out.println("TOKEN EXTRAÍDO → " + token);
+
+            Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+            Long idUsuario = Long.parseLong(claims.get("id").toString());
+            System.out.println("ID extraído del token: " + idUsuario);
+
+            String bio = us.obtenerBiografia(idUsuario);
+            return ResponseEntity.ok(bio);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
+        }
+    }
+
+
+    public Long jwtUtilsExtraerIdDesdeToken(String token) {
+        System.out.println("Extraer id del token: " + token); 
+
+        Claims claims = Jwts.parserBuilder()
+            .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes())) // usa la misma clave que en el backend
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
+
+        System.out.println("ID del token → " + claims.get("id")); 
+        return Long.parseLong(claims.get("id").toString());
+    }
+
+
 
 
     // ------------------- CLASES INTERNAS (recomendado mover a un paquete DTO después) -------------------

@@ -124,13 +124,37 @@ public class usuariosService {
     }
 
         public String generarToken(Usuario usuario) {
-        return Jwts.builder()
-                .setSubject(usuario.getEmail())
-                .claim("nombre", usuario.getNombre())
-                .claim("id", usuario.getIdUsuario())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
-                .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256)) //  clave para el token
-                .compact();
+        	
+            boolean esAlumno = alumnoRepository.existsById(usuario.getIdUsuario());
+            System.out.println("GENERAR TOKEN ID USUARIO: " + usuario.getIdUsuario());
+            
+	        return Jwts.builder()
+	                .setSubject(usuario.getEmail())
+	                .claim("nombre", usuario.getNombre())
+	                .claim("id", usuario.getIdUsuario())
+	                .claim("rol", esAlumno ? "alumno" : "usuario") 
+	                .setIssuedAt(new Date())
+	                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
+	                .signWith(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()), SignatureAlgorithm.HS256) //  clave para el token
+	                .compact();
     }
+        
+        public void editarBiografia(Long idUsuario, String nuevaBiografia) {
+            Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            usuario.setBiografia(nuevaBiografia);
+            usuarioRepository.save(usuario);
+        }
+        
+        public String obtenerBiografia(Long idUsuario) {
+            Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            
+            System.out.println("BIOGRAFIA: " + usuario.getBiografia());
+            return usuario.getBiografia() != null ? usuario.getBiografia() : "";
+        }
+
+
 }
