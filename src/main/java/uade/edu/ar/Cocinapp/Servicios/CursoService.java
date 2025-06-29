@@ -6,10 +6,20 @@ import uade.edu.ar.Cocinapp.DTO.CursoDisponibleDTO;
 import uade.edu.ar.Cocinapp.DTO.CursoInscriptoDTO;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
 import uade.edu.ar.Cocinapp.Entidades.CronogramaCurso;
+import uade.edu.ar.Cocinapp.Entidades.Curso;
 import uade.edu.ar.Cocinapp.Entidades.InscripcionCurso;
 import uade.edu.ar.Cocinapp.Repositorios.AlumnoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.CronogramaCursoRepository;
+import uade.edu.ar.Cocinapp.Repositorios.CursoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.InscripcionCursoRepository;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +28,9 @@ import java.util.List;
 
 @Service
 public class CursoService {
+	
+	@Autowired
+    private CursoRepository cursoRepo;
 
     @Autowired
     private CronogramaCursoRepository cronogramaRepo;
@@ -106,5 +119,32 @@ public class CursoService {
 
         return resultado;
     }
+        
+        public void generarQRCode(String texto, String nombreArchivo) {
+            try {
+                String ruta = "qr-codes/" + nombreArchivo + ".png";
+                int width = 300;
+                int height = 300;
+
+                BitMatrix matrix = new MultiFormatWriter()
+                        .encode(texto, BarcodeFormat.QR_CODE, width, height);
+
+                Path path = FileSystems.getDefault().getPath(ruta);
+                MatrixToImageWriter.writeToPath(matrix, "PNG", path);
+
+                System.out.println("QR generado en: " + path.toAbsolutePath());
+            } catch (Exception e) {
+                throw new RuntimeException("Error al generar QR", e);
+            }
+        }
+        
+        
+        @Transactional
+        public Curso crearCurso(Curso curso, CronogramaCurso crono) {
+        	generarQRCode("curso-id:" + curso.getIdCurso(), "qr-curso-" + crono.getIdCronograma());
+            return cursoRepo.save(curso);
+        }
+
+        
 }
 
