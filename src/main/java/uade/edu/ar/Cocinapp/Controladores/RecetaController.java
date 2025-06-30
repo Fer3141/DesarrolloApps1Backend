@@ -18,6 +18,16 @@ public class RecetaController {
     private recetasService recetaService;
 
 
+    @GetMapping("/ultimas")
+    public List<RecetaResumenDTO> getUltimas() {
+        return recetaService.obtenerUltimas3();
+    }
+
+    @GetMapping("/mejores")
+    public List<RecetaResumenDTO> getMejores() {
+        return recetaService.obtenerMejores();
+    }
+
     // endpoint para carga unificada de receta
     @PostMapping
     public ResponseEntity<?> crearReceta(@RequestBody RecetaDTO recetaDTO) {
@@ -88,4 +98,6 @@ public class RecetaController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
 }

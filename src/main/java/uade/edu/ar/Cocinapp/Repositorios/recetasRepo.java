@@ -10,4 +10,6 @@ import uade.edu.ar.Cocinapp.Entidades.Receta;
 @Repository
 public interface recetasRepo extends JpaRepository<Receta, Long> {
     List<Receta> findByNombreRecetaContainingIgnoreCaseOrderByIdRecetaDesc(String nombreReceta);
+
+    List<Receta> findTop3ByOrderByIdRecetaDesc(); //para traer las mas recientes
 }

@@ -250,7 +250,6 @@ public class recetasService {
         return resultado;
     }
 
-
     //eliminar de favoritos una receta
     @Transactional
     public void eliminarFavorito(Long idUsuario, Long idReceta) {
@@ -260,6 +259,41 @@ public class recetasService {
 
         favoritaRepo.deleteByUsuario_IdUsuarioAndReceta_IdReceta(idUsuario, idReceta);
         System.out.println("favorito eliminado correctamente");
+    }
+
+    // obtener las ultimas 3 recetas para mostrar en el feed
+    public List<RecetaResumenDTO> obtenerUltimas3() {
+        List<Receta> lista = recetaRepo.findTop3ByOrderByIdRecetaDesc();
+
+        List<RecetaResumenDTO> resultado = new ArrayList<>();
+        for (Receta r : lista) {
+            List<Calificacion> calificaciones = calificacionRepo.findAll().stream()
+                    .filter(c -> c.getReceta().getIdReceta().equals(r.getIdReceta()))
+                    .toList();
+
+            double promedio = calificaciones.stream()
+                    .mapToInt(Calificacion::getCalificacion)
+                    .average()
+                    .orElse(0);
+
+            resultado.add(new RecetaResumenDTO(
+                    r.getIdReceta(),
+                    r.getNombreReceta(),
+                    r.getFotoPrincipal(),
+                    r.getUsuario().getAlias(),
+                    promedio
+            ));
+        }
+
+    return resultado;
+    }
+
+    public List<RecetaResumenDTO> obtenerMejores() {
+        List<RecetaResumenDTO> todas = buscarRecetasPorNombre(null);
+        return todas.stream()
+                .sorted(Comparator.comparingDouble((RecetaResumenDTO r) -> r.promedio).reversed())
+                .limit(10) // podés mostrar más si querés
+                .toList();
     }
 }
 
