@@ -476,8 +476,26 @@ public class recetasService {
         return resultado;
     }
 
+    public void aprobarReceta(Long idReceta) {
+        Receta receta = recetaRepo.findById(idReceta)
+                .orElseThrow(() -> new RuntimeException("Receta no encontrada"));
 
+        receta.setAprobada(true);
+        receta.setRechazada(false);
+        receta.setMotivoRechazo(null);
 
+        recetaRepo.save(receta);
+    }
 
+    public void rechazarReceta(Long idReceta, String motivo) {
+        Receta receta = recetaRepo.findById(idReceta)
+                .orElseThrow(() -> new RuntimeException("Receta no encontrada"));
+
+        receta.setAprobada(false);
+        receta.setRechazada(true);
+        receta.setMotivoRechazo(motivo);
+
+        recetaRepo.save(receta);
+    }
 }
 

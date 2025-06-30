@@ -1,6 +1,7 @@
 package uade.edu.ar.Cocinapp.Controladores;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +62,50 @@ public class AdminController {
 
         } catch (Exception e) {
             System.out.println("Error al obtener recetas pendientes: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // endpoint para el admin para aprobar una receta
+    @PutMapping("/recetas/{id}/aprobar")
+    public ResponseEntity<?> aprobarReceta(@RequestParam Long idUsuario, @PathVariable Long id) {
+        try {
+            Usuario u = usuarioRepo.findById(idUsuario)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            if (u.getRol() != Rol.ADMIN) {
+                throw new RuntimeException("No tenés permisos para acceder a esta acción");
+            }
+
+            recetaService.aprobarReceta(id);
+            return ResponseEntity.ok("Receta aprobada correctamente");
+
+        } catch (Exception e) {
+            System.out.println("Error al aprobar receta: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // endpoint para el admin para aprobar una receta
+    @PutMapping("/recetas/{id}/rechazar")
+    public ResponseEntity<?> rechazarReceta(@RequestParam Long idUsuario,
+                                            @PathVariable Long id,
+                                            @RequestBody Map<String, String> body) {
+        try {
+            Usuario u = usuarioRepo.findById(idUsuario)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            if (u.getRol() != Rol.ADMIN) {
+                throw new RuntimeException("No tenés permisos para acceder a esta acción");
+            }
+
+            String motivo = body.get("motivo");
+            recetaService.rechazarReceta(id, motivo);
+
+            return ResponseEntity.ok("Receta rechazada con motivo: " + motivo);
+
+        } catch (Exception e) {
+            System.out.println("Error al rechazar receta: " + e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
