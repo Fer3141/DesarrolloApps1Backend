@@ -58,8 +58,7 @@ public class UsuarioController {
         try {
             var usuario = us.loginYDevolver(is.getMail(), is.getPassword());
 
-            String token = us.generarToken(usuario); // usa tu método
-            System.out.println("Token generado del login:" + token);
+            String token = us.generarToken(usuario); 
             return ResponseEntity.ok(new LoginResponseDTO(token)); // devuelve el token
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
@@ -172,6 +171,7 @@ public class UsuarioController {
         return ResponseEntity.ok("contraseña cambiada");
 }
     
+/*
     @PutMapping("/editar-biografia")
     public ResponseEntity<?> editarBiografia(@RequestHeader("Authorization") String authHeader, @RequestParam String biografia) {
         try {
@@ -315,7 +315,7 @@ public class UsuarioController {
     }
 
 
-
+*/
 
 
 

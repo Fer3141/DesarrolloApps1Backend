@@ -21,100 +21,129 @@ import lombok.Setter;
 @Entity
 @Table(name = "recetas")
 public class Receta {
-	
-	@Id
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idReceta")
-	private Long idReceta;
-	
-	@ManyToOne
-	@JoinColumn(name = "idUsuario") // este es el nombre de la columna en la tabla
-	private Usuario usuario;
-	
-	@Column(name = "nombreReceta")
-	private String nombreReceta;
-	
-	@Column(name = "descripcionReceta")
-	private String descripcionReceta;
-	
-	private String fotoPrincipal;
-	
-	@Column(name = "porciones")
-	private int porciones;
-	
-	@Column(name = "cantidadPersonas")
-	private int cantidadPersonas;
-	
-	private int idTipo;
+    private Long idReceta;
 
-	public Long getIdReceta() {
-		return idReceta;
-	}
+    @ManyToOne
+    @JoinColumn(name = "idUsuario")
+    private Usuario usuario;
 
-	public void setIdReceta(Long idReceta) {
-		this.idReceta = idReceta;
-	}
+    private String nombreReceta;
 
+    private String descripcionReceta;
 
-	public String getNombreReceta() {
-		return nombreReceta;
-	}
+    private String fotoPrincipal;
 
-	public void setNombreReceta(String nombreReceta) {
-		this.nombreReceta = nombreReceta;
-	}
+    private int porciones;
 
-	public String getDescripcionReceta() {
-		return descripcionReceta;
-	}
+    private int cantidadPersonas;
 
-	public void setDescripcionReceta(String descripcionReceta) {
-		this.descripcionReceta = descripcionReceta;
-	}
+    private int idTipo;
 
-	public String getFotoPrincipal() {
-		return fotoPrincipal;
-	}
+    // campos para manejar la probacion de la creacion de recetas
 
-	public void setFotoPrincipal(String fotoPrincipal) {
-		this.fotoPrincipal = fotoPrincipal;
-	}
+    @Column(name = "aprobada", nullable = false)
+    private boolean aprobada = false;
 
-	public int getPorciones() {
-		return porciones;
-	}
+    @Column(name = "rechazada", nullable = false)
+    private boolean rechazada = false;
 
-	public void setPorciones(int porciones) {
-		this.porciones = porciones;
-	}
+    @Column(name = "motivo_rechazo")
+    private String motivoRechazo;
 
-	public int getCantidadPersonas() {
-		return cantidadPersonas;
-	}
+    // Getters y setters
 
-	public void setCantidadPersonas(int cantidadPersonas) {
-		this.cantidadPersonas = cantidadPersonas;
-	}
+    public Long getIdReceta() {
+        return idReceta;
+    }
 
-	public int getIdTipo() {
-		return idTipo;
-	}
+    public void setIdReceta(Long idReceta) {
+        this.idReceta = idReceta;
+    }
 
-	public void setIdTipo(int idTipo) {
-		this.idTipo = idTipo;
-	}
+    public Usuario getUsuario() {
+        return usuario;
+    }
 
-	public Receta() {
-		
-	}
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
 
-	public Usuario getUsuario() {
-    return usuario;
-}
+    public String getNombreReceta() {
+        return nombreReceta;
+    }
 
-	public void setUsuario(Usuario usuario) {
-		this.usuario = usuario;
-	}
-	
-	
+    public void setNombreReceta(String nombreReceta) {
+        this.nombreReceta = nombreReceta;
+    }
+
+    public String getDescripcionReceta() {
+        return descripcionReceta;
+    }
+
+    public void setDescripcionReceta(String descripcionReceta) {
+        this.descripcionReceta = descripcionReceta;
+    }
+
+    public String getFotoPrincipal() {
+        return fotoPrincipal;
+    }
+
+    public void setFotoPrincipal(String fotoPrincipal) {
+        this.fotoPrincipal = fotoPrincipal;
+    }
+
+    public int getPorciones() {
+        return porciones;
+    }
+
+    public void setPorciones(int porciones) {
+        this.porciones = porciones;
+    }
+
+    public int getCantidadPersonas() {
+        return cantidadPersonas;
+    }
+
+    public void setCantidadPersonas(int cantidadPersonas) {
+        this.cantidadPersonas = cantidadPersonas;
+    }
+
+    public int getIdTipo() {
+        return idTipo;
+    }
+
+    public void setIdTipo(int idTipo) {
+        this.idTipo = idTipo;
+    }
+
+    public boolean isAprobada() {
+        return aprobada;
+    }
+
+    public void setAprobada(boolean aprobada) {
+        this.aprobada = aprobada;
+    }
+
+    public boolean isRechazada() {
+        return rechazada;
+    }
+
+    public void setRechazada(boolean rechazada) {
+        this.rechazada = rechazada;
+    }
+
+    public String getMotivoRechazo() {
+        return motivoRechazo;
+    }
+
+    public void setMotivoRechazo(String motivoRechazo) {
+        this.motivoRechazo = motivoRechazo;
+    }
+
+    public Receta() {
+    }
 }

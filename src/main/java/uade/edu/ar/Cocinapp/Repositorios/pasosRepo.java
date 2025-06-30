@@ -10,4 +10,6 @@ import uade.edu.ar.Cocinapp.Entidades.pasos;
 @Repository
 public interface pasosRepo extends JpaRepository<pasos, Long>{
     List<pasos> findByReceta_IdRecetaOrderByNroPasoAsc(Long idReceta);
+
+    void deleteByReceta_IdReceta(Long idReceta);
 }

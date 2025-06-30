@@ -9,12 +9,9 @@ import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
-import uade.edu.ar.Cocinapp.DTO.DatosAlumnoDTO;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
+import uade.edu.ar.Cocinapp.Entidades.Rol;
 import uade.edu.ar.Cocinapp.Entidades.Usuario;
 import uade.edu.ar.Cocinapp.Repositorios.AlumnoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.RegistroPendienteRepository;
@@ -31,9 +28,6 @@ public class usuariosService {
 
     @Autowired
     private RegistroPendienteRepository registroPendienteRepository;
-    
-    @PersistenceContext
-    private EntityManager em;
 
     // metodo para verificar si un email ya está registrado
     public boolean existeMail(String email) {
@@ -70,14 +64,14 @@ public class usuariosService {
 
     // registro final (paso 3 del circuito)
     public void TerminarRegistro(String email,
-                                  boolean esAlumno,
-                                  String nombre,
-                                  String apellido,
-                                  String password,
-                                  String fotoDniFrente,
-                                  String fotoDniDorso,
-                                  String nroTramiteDni,
-                                  String cuentaCorrienteStr) {
+                              boolean esAlumno,
+                              String nombre,
+                              String apellido,
+                              String password,
+                              String fotoDniFrente,
+                              String fotoDniDorso,
+                              String nroTramiteDni,
+                              String cuentaCorrienteStr) {
 
         // buscamos el registro pendiente con ese email
         RegistroPendiente registro = registroPendienteRepository.findByEmail(email)
@@ -90,6 +84,7 @@ public class usuariosService {
             a.setNombre(nombre);
             a.setPassword(password);
             a.setHabilitado(true);
+            a.setRol(Rol.ALUMNO); //rol ALUMNO
 
             a.setFotoDniFrente(fotoDniFrente);
             a.setFotoDniDorso(fotoDniDorso);
@@ -110,12 +105,15 @@ public class usuariosService {
             u.setNombre(nombre);
             u.setPassword(password);
             u.setHabilitado(true);
+            u.setRol(Rol.USUARIO); //rol USUARIO
+
             usuarioRepository.save(u);
         }
 
         // eliminamos el registro pendiente
         registroPendienteRepository.delete(registro);
     }
+
 
     public Usuario loginYDevolver(String email, String password) {
         email = email.trim().toLowerCase();
@@ -131,74 +129,20 @@ public class usuariosService {
     }
 
         public String generarToken(Usuario usuario) {
-        	
+
             boolean esAlumno = alumnoRepository.existsById(usuario.getIdUsuario());
             System.out.println("GENERAR TOKEN ID USUARIO: " + usuario.getIdUsuario());
-            
-	        return Jwts.builder()
-	                .setSubject(usuario.getEmail())
-	                .claim("nombre", usuario.getNombre())
-	                .claim("id", usuario.getIdUsuario())
-	                .claim("rol", esAlumno ? "alumno" : "usuario") 
-	                .setIssuedAt(new Date())
-	                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
-	                .signWith(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()), SignatureAlgorithm.HS256) //  clave para el token
-	                .compact();
+
+
+        return Jwts.builder()
+                .setSubject(usuario.getEmail())
+                .claim("nombre", usuario.getNombre())
+                .claim("id", usuario.getIdUsuario())
+                .claim("nickname", usuario.getAlias())
+                .claim("rol", esAlumno ? "alumno" : "usuario") 
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
+                .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256)) //  clave para el token
+                .compact();
     }
-        
-        public void editarBiografia(Long idUsuario, String nuevaBiografia) {
-            Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-            usuario.setBiografia(nuevaBiografia);
-            usuarioRepository.save(usuario);
-        }
-        
-        public String obtenerBiografia(Long idUsuario) {
-            Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-            
-            System.out.println("BIOGRAFIA: " + usuario.getBiografia());
-            return usuario.getBiografia() != null ? usuario.getBiografia() : "";
-        }
-
-		public Usuario obtenerUsuario(Long idUsuario) {
-			return usuarioRepository.findById(idUsuario)
-			        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-		}
-
-		@Transactional
-		public void convertirEnAlumno(Long idUsuario, DatosAlumnoDTO datos) {
-		    Usuario usuarioExistente = usuarioRepository.findById(idUsuario)
-		        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-		    if (alumnoRepository.existsById(idUsuario)) {
-		        throw new RuntimeException("Ya sos alumno");
-		    }
-
-		    Alumno alumno = new Alumno();
-		    alumno.setIdUsuario(usuarioExistente.getIdUsuario()); // clave
-		    alumno.setAlias(usuarioExistente.getAlias());
-		    alumno.setEmail(usuarioExistente.getEmail());
-		    alumno.setPassword(usuarioExistente.getPassword());
-		    alumno.setNombre(usuarioExistente.getNombre());
-		    alumno.setDireccion(usuarioExistente.getDireccion());
-		    alumno.setAvatar(usuarioExistente.getAvatar());
-		    alumno.setBiografia(usuarioExistente.getBiografia());
-		    alumno.setHabilitado(usuarioExistente.isHabilitado());
-
-		    alumno.setNroTramiteDni(datos.getNroTramiteDni());
-		    alumno.setNumeroTarjeta(datos.getNumeroTarjeta());
-		    alumno.setCuentaCorriente(0f);
-
-		    // 👇 Este paso hace la diferencia
-		    alumnoRepository.saveAndFlush(alumno); // save() a veces no sincroniza bien con herencia
-		}
-
-
-
-
-
-
 }

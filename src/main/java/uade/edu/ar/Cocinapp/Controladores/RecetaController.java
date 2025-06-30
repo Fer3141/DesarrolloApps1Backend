@@ -1,20 +1,17 @@
 package uade.edu.ar.Cocinapp.Controladores;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import uade.edu.ar.Cocinapp.DTO.RecetaDTO;
 import uade.edu.ar.Cocinapp.DTO.RecetaDetalleDTO;
 import uade.edu.ar.Cocinapp.DTO.RecetaResumenDTO;
-import uade.edu.ar.Cocinapp.Entidades.Usuario;
+import uade.edu.ar.Cocinapp.Entidades.Receta;
 import uade.edu.ar.Cocinapp.Servicios.recetasService;
-import uade.edu.ar.Cocinapp.Servicios.usuariosService;
 
 @RestController
 @RequestMapping("/recetas")
@@ -22,38 +19,22 @@ public class RecetaController {
 
     @Autowired
     private recetasService recetaService;
-    
-    @Autowired
-    private usuariosService us;
+
+
+    @GetMapping("/ultimas")
+    public List<RecetaResumenDTO> getUltimas() {
+        return recetaService.obtenerUltimas3();
+    }
+
+    @GetMapping("/mejores")
+    public List<RecetaResumenDTO> getMejores() {
+        return recetaService.obtenerMejores();
+    }
 
     // endpoint para carga unificada de receta
-    @PostMapping("/crear")
-    public ResponseEntity<?> crearReceta(@RequestHeader("Authorization") String authHeader, @RequestBody RecetaDTO recetaDTO) {
+    @PostMapping
+    public ResponseEntity<?> crearReceta(@RequestBody RecetaDTO recetaDTO) {
         try {
-        	System.out.println("Token recibido: " + authHeader);
-        	
-        	String json = authHeader.replace("AuthBearer ", "").trim();
-            String token = json.split(":")[1]
-                               .replace("\"", "")
-                               .replace("}", "")
-                               .trim();
-
-            System.out.println("TOKEN EXTRAÍDO → " + token);
-
-            // 2. Extraer el ID del usuario desde el token
-            Claims claims = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()))
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-            Long idUsuario = Long.parseLong(claims.get("id").toString());
-            System.out.println("ID extraído del token: " + idUsuario);
-
-            // 3. Obtener los datos actuales del usuario
-            Usuario usuario = us.obtenerUsuario(idUsuario);
-            recetaDTO.setIdUsuario(idUsuario);
-        	
             recetaService.guardarRecetaCompleta(recetaDTO);
             return ResponseEntity.ok("receta creada correctamente");
         } catch (Exception e) {
@@ -120,4 +101,57 @@ public class RecetaController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // verificamos que el usuario no tenga una receta creada con el mismo nombre
+    @GetMapping("/verificar-nombre")
+    public ResponseEntity<?> verificarNombreReceta(@RequestParam Long idUsuario,
+                                                    @RequestParam String nombre) {
+        try {
+            Optional<RecetaResumenDTO> dto = recetaService.verificarExistenciaReceta(idUsuario, nombre);
+
+            if (dto.isPresent()) {
+                return ResponseEntity.ok(Map.of("existe", true, "receta", dto.get()));
+            } else {
+                return ResponseEntity.ok(Map.of("existe", false));
+            }
+
+        } catch (Exception e) {
+            System.out.println("error al verificar receta: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> eliminarReceta(@RequestParam Long idUsuario, @RequestParam Long idReceta) {
+        try {
+            recetaService.eliminarReceta(idUsuario, idReceta);
+            return ResponseEntity.ok("Receta eliminada correctamente");
+        } catch (Exception e) {
+            System.out.println("Error al eliminar receta: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping
+    public ResponseEntity<?> editarReceta(@RequestBody RecetaDetalleDTO dto) {
+        try {
+            recetaService.editarReceta(dto);
+            return ResponseEntity.ok("Receta editada correctamente y reenviada para aprobación");
+        } catch (Exception e) {
+            System.out.println("Error al editar receta: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/mis-recetas")
+    public ResponseEntity<?> getRecetasDelUsuario(@RequestParam Long idUsuario) {
+        try {
+            List<RecetaResumenDTO> resultado = recetaService.obtenerRecetasDelUsuario(idUsuario);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            System.out.println("Error al obtener recetas del usuario: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
 }
