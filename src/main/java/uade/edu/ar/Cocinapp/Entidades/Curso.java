@@ -29,6 +29,8 @@ public class Curso {
     // precio base del curso
     private double precio;
 
+
+    //Nota de Antonia: Para mí la modalidad se deberia establecer en el cronograma
     // modalidad: presencial, remoto o virtual
     @Column(columnDefinition = "varchar(20)")
     private String modalidad;

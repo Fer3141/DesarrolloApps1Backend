@@ -1,8 +1,14 @@
 package uade.edu.ar.Cocinapp.Controladores;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import uade.edu.ar.Cocinapp.Entidades.CronogramaCurso;
+import uade.edu.ar.Cocinapp.Entidades.Curso;
+import uade.edu.ar.Cocinapp.Servicios.AsistenciaService;
 import uade.edu.ar.Cocinapp.Servicios.CursoService;
 
 @RestController
@@ -11,6 +17,9 @@ public class CursoController {
 
     @Autowired
     private CursoService cursoService;
+    
+    @Autowired
+    private AsistenciaService as;
 
     // devuelve la lista de cursos disponibles con info de sede, fechas y promociones
     @GetMapping
@@ -47,5 +56,53 @@ public class CursoController {
             return ResponseEntity.status(500).body("error interno");
         }
     }
+    
+    @PostMapping("/asistencia/checkin")
+    public ResponseEntity<?> marcarAsistencia(
+        @RequestParam Long idAlumno,
+        @RequestParam Long idCurso,
+        @RequestParam Long idCronograma) {
+
+        try {
+        	boolean estaInscripto = inscripcionRepo.existsByAlumno_IdUsuarioAndCronograma_IdCronograma(idAlumno, idCronograma);
+        	if (!estaInscripto) {
+        	    throw new RuntimeException("El alumno no está inscripto en ese cronograma");
+        	} else {
+        		as.marcarAsistencia(idAlumno, idCurso, idCronograma);
+        		return ResponseEntity.ok("Asistencia registrada correctamente.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/crearCurso")
+    public ResponseEntity<?> crearCurso(@RequestBody Curso curso) {
+        try {
+            Curso nuevo = cursoService.crearCurso(curso);
+            return ResponseEntity.ok("Curso creado con ID: " + nuevo.getIdCurso());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al crear curso: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/crear-cronograma")
+    public ResponseEntity<?> crearCronograma(
+            @RequestParam Long idCurso,
+            @RequestParam Long idSede,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam int vacantes) {
+        try {
+            LocalDate fInicio = LocalDate.parse(fechaInicio);
+            LocalDate fFin = LocalDate.parse(fechaFin);
+
+            CronogramaCurso nuevo = cursoService.crearCronograma(idCurso, idSede, fInicio, fFin, vacantes);
+            return ResponseEntity.ok("Cronograma creado con ID: " + nuevo.getIdCronograma());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al crear cronograma: " + e.getMessage());
+        }
+    }
+    
 }
 

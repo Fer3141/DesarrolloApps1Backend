@@ -7,5 +7,5 @@ import uade.edu.ar.Cocinapp.Entidades.Alumno;
 
 @Repository
 public interface AlumnoRepository extends JpaRepository<Alumno, Long> {
-    // por ahora no necesitás nada extra
+    
 }
