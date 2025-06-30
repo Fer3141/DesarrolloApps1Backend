@@ -57,6 +57,7 @@ public class CursoController {
         }
     }
     
+    /* 
     @PostMapping("/asistencia/checkin")
     public ResponseEntity<?> marcarAsistencia(
         @RequestParam Long idAlumno,
@@ -75,7 +76,7 @@ public class CursoController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+*/
     @PostMapping("/crearCurso")
     public ResponseEntity<?> crearCurso(@RequestBody Curso curso) {
         try {

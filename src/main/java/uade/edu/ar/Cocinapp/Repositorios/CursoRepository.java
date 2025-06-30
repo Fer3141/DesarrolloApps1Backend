@@ -5,7 +5,3 @@ import uade.edu.ar.Cocinapp.Entidades.Curso;
 
 public interface CursoRepository extends JpaRepository<Curso, Long> {
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> tincho
