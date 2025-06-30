@@ -128,6 +128,7 @@ public class usuariosService {
                 .setSubject(usuario.getEmail())
                 .claim("nombre", usuario.getNombre())
                 .claim("id", usuario.getIdUsuario())
+                .claim("nickname", usuario.getAlias())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
                 .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256)) //  clave para el token

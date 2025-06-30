@@ -51,7 +51,7 @@ public class UsuarioController {
         try {
             var usuario = us.loginYDevolver(is.getMail(), is.getPassword());
 
-            String token = us.generarToken(usuario); // usa tu método
+            String token = us.generarToken(usuario); 
             return ResponseEntity.ok(new LoginResponseDTO(token)); // devuelve el token
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
