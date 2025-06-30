@@ -1,6 +1,8 @@
 package uade.edu.ar.Cocinapp.Controladores;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import uade.edu.ar.Cocinapp.DTO.RecetaDTO;
 import uade.edu.ar.Cocinapp.DTO.RecetaDetalleDTO;
 import uade.edu.ar.Cocinapp.DTO.RecetaResumenDTO;
+import uade.edu.ar.Cocinapp.Entidades.Receta;
 import uade.edu.ar.Cocinapp.Servicios.recetasService;
 
 @RestController
@@ -99,5 +102,56 @@ public class RecetaController {
         }
     }
 
+    // verificamos que el usuario no tenga una receta creada con el mismo nombre
+    @GetMapping("/verificar-nombre")
+    public ResponseEntity<?> verificarNombreReceta(@RequestParam Long idUsuario,
+                                                    @RequestParam String nombre) {
+        try {
+            Optional<RecetaResumenDTO> dto = recetaService.verificarExistenciaReceta(idUsuario, nombre);
 
+            if (dto.isPresent()) {
+                return ResponseEntity.ok(Map.of("existe", true, "receta", dto.get()));
+            } else {
+                return ResponseEntity.ok(Map.of("existe", false));
+            }
+
+        } catch (Exception e) {
+            System.out.println("error al verificar receta: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> eliminarReceta(@RequestParam Long idUsuario, @RequestParam Long idReceta) {
+        try {
+            recetaService.eliminarReceta(idUsuario, idReceta);
+            return ResponseEntity.ok("Receta eliminada correctamente");
+        } catch (Exception e) {
+            System.out.println("Error al eliminar receta: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping
+    public ResponseEntity<?> editarReceta(@RequestBody RecetaDetalleDTO dto) {
+        try {
+            recetaService.editarReceta(dto);
+            return ResponseEntity.ok("Receta editada correctamente y reenviada para aprobación");
+        } catch (Exception e) {
+            System.out.println("Error al editar receta: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/mis-recetas")
+    public ResponseEntity<?> getRecetasDelUsuario(@RequestParam Long idUsuario) {
+        try {
+            List<RecetaResumenDTO> resultado = recetaService.obtenerRecetasDelUsuario(idUsuario);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            System.out.println("Error al obtener recetas del usuario: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
 }

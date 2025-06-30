@@ -11,6 +11,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
+import uade.edu.ar.Cocinapp.Entidades.Rol;
 import uade.edu.ar.Cocinapp.Entidades.Usuario;
 import uade.edu.ar.Cocinapp.Repositorios.AlumnoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.RegistroPendienteRepository;
@@ -63,14 +64,14 @@ public class usuariosService {
 
     // registro final (paso 3 del circuito)
     public void TerminarRegistro(String email,
-                                  boolean esAlumno,
-                                  String nombre,
-                                  String apellido,
-                                  String password,
-                                  String fotoDniFrente,
-                                  String fotoDniDorso,
-                                  String nroTramiteDni,
-                                  String cuentaCorrienteStr) {
+                              boolean esAlumno,
+                              String nombre,
+                              String apellido,
+                              String password,
+                              String fotoDniFrente,
+                              String fotoDniDorso,
+                              String nroTramiteDni,
+                              String cuentaCorrienteStr) {
 
         // buscamos el registro pendiente con ese email
         RegistroPendiente registro = registroPendienteRepository.findByEmail(email)
@@ -83,6 +84,7 @@ public class usuariosService {
             a.setNombre(nombre);
             a.setPassword(password);
             a.setHabilitado(true);
+            a.setRol(Rol.ALUMNO); //rol ALUMNO
 
             a.setFotoDniFrente(fotoDniFrente);
             a.setFotoDniDorso(fotoDniDorso);
@@ -103,12 +105,15 @@ public class usuariosService {
             u.setNombre(nombre);
             u.setPassword(password);
             u.setHabilitado(true);
+            u.setRol(Rol.USUARIO); //rol USUARIO
+
             usuarioRepository.save(u);
         }
 
         // eliminamos el registro pendiente
         registroPendienteRepository.delete(registro);
     }
+
 
     public Usuario loginYDevolver(String email, String password) {
         email = email.trim().toLowerCase();
@@ -124,11 +129,17 @@ public class usuariosService {
     }
 
         public String generarToken(Usuario usuario) {
+
+            boolean esAlumno = alumnoRepository.existsById(usuario.getIdUsuario());
+            System.out.println("GENERAR TOKEN ID USUARIO: " + usuario.getIdUsuario());
+
+
         return Jwts.builder()
                 .setSubject(usuario.getEmail())
                 .claim("nombre", usuario.getNombre())
                 .claim("id", usuario.getIdUsuario())
                 .claim("nickname", usuario.getAlias())
+                .claim("rol", esAlumno ? "alumno" : "usuario") 
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
                 .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256)) //  clave para el token
