@@ -190,31 +190,9 @@ public class UsuarioController {
 
 
     @PutMapping("/editar-biografia")
-    public ResponseEntity<?> editarBiografia(@RequestHeader("Authorization") String authHeader, @RequestParam String biografia) {
+    public ResponseEntity<?> editarBiografia(@RequestParam Long idUsuario,
+                                            @RequestParam String biografia) {
         try {
-            System.out.println("INGRESA EDITAR");
-
-            String json = authHeader.replace("AuthBearer ", "").trim();
-
-            // Extraer el string del token
-            String token = json.split(":")[1]
-                               .replace("\"", "")
-                               .replace("}", "")
-                               .trim();
-
-            System.out.println("TOKEN EXTRAÍDO → " + token);
-
-            Claims claims = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()))
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-            Long idUsuario = Long.parseLong(claims.get("id").toString());
-            System.out.println("ID extraído del token: " + idUsuario);
-
-            
-            
             us.editarBiografia(idUsuario, biografia);
             return ResponseEntity.ok("Biografía actualizada con éxito");
         } catch (RuntimeException e) {
@@ -222,47 +200,20 @@ public class UsuarioController {
         }
     }
 
-    @ResponseBody
+
     @GetMapping(value = "/obtener-perfil", produces = "application/json")
-    public ResponseEntity<?> obtenerBiografia(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> obtenerBiografia(@RequestParam Long idUsuario) {
         try {
-            System.out.println("INGRESA Obtener");
-            System.out.println("AuthHeader → " + authHeader);
-
-            String json = authHeader.replace("AuthBearer ", "").trim();
-
-            // Extraer el string del token
-            String token = json.split(":")[1]
-                               .replace("\"", "")
-                               .replace("}", "")
-                               .trim();
-
-            System.out.println("TOKEN EXTRAÍDO → " + token);
-
-            Claims claims = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()))
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-            Long idUsuario = Long.parseLong(claims.get("id").toString());
-            System.out.println("ID extraído del token: " + idUsuario);
-
-           //String bio = us.obtenerBiografia(idUsuario);
             Usuario usuario = us.obtenerUsuario(idUsuario);
-            System.out.println("user name:" + usuario.getNombre());
-            System.out.println("user get biografia" + usuario.getBiografia());
-            
-            
+
             PerfilDTO dto = new PerfilDTO();
             dto.setNombre(usuario.getNombre());
             dto.setBiografia(usuario.getBiografia());
             dto.setAlias(usuario.getAlias());
 
             return ResponseEntity.ok()
-                    .header("Content-Type", "application/json") // ✅ fuerza a JSON
-                    .body(dto);           // return ResponseEntity.ok(bio);
-
+                    .header("Content-Type", "application/json")
+                    .body(dto);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
@@ -270,21 +221,8 @@ public class UsuarioController {
     }
 
 
-    public Long jwtUtilsExtraerIdDesdeToken(String token) {
-        System.out.println("Extraer id del token: " + token); 
-
-        Claims claims = Jwts.parserBuilder()
-            .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes())) // usa la misma clave que en el backend
-            .build()
-            .parseClaimsJws(token)
-            .getBody();
-
-        System.out.println("ID del token → " + claims.get("id")); 
-        return Long.parseLong(claims.get("id").toString());
-    }
     
-    
-    @PutMapping("/hacer-alumno")
+    @PutMapping("/hacer-alumno") // NO ANDA :(
     public ResponseEntity<String> convertirEnAlumno(@RequestParam Long idUsuario,
                                                     @RequestBody DatosAlumnoDTO datos) {
         try {
