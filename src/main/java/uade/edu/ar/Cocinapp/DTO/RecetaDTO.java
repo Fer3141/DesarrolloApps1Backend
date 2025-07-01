@@ -4,6 +4,7 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+import uade.edu.ar.Cocinapp.Entidades.TipoReceta;
 import lombok.AllArgsConstructor;
 
 @Getter
@@ -14,7 +15,7 @@ public class RecetaDTO {
     public String descripcionReceta; // descripcion general
     public int porciones; // cantidad de porciones
     public int cantidadPersonas; // cuantas personas rinde
-    public int idTipo; // id de tipo de receta (ya predefinidos en la tabla tiposReceta)
+    public TipoReceta tipo; // id de tipo de receta (ya predefinidos en la tabla tiposReceta)
     public String fotoPrincipal; // url de la imagen principal
     public long idUsuario; // id del usuario que la crea
 

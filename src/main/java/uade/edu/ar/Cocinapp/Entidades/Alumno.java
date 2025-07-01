@@ -6,11 +6,11 @@ import jakarta.persistence.*;
 @Table(name = "alumnos")
 public class Alumno extends Usuario {
 
-    @Lob
+    
     @Column(name = "foto_dni_frente")
     private String fotoDniFrente;
 
-    @Lob
+    
     @Column(name = "foto_dni_dorso")
     private String fotoDniDorso;
 

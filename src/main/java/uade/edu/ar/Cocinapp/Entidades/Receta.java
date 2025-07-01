@@ -5,6 +5,8 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,7 +43,9 @@ public class Receta {
 
     private int cantidadPersonas;
 
-    private int idTipo;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo", nullable = false)
+    private TipoReceta tipo;
 
     // campos para manejar la probacion de la creacion de recetas
 
@@ -112,12 +116,12 @@ public class Receta {
         this.cantidadPersonas = cantidadPersonas;
     }
 
-    public int getIdTipo() {
-        return idTipo;
+    public TipoReceta getTipo() {
+        return tipo;
     }
 
-    public void setIdTipo(int idTipo) {
-        this.idTipo = idTipo;
+    public void setTipo(TipoReceta tipo) {
+        this.tipo = tipo;
     }
 
     public boolean isAprobada() {

@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import uade.edu.ar.Cocinapp.DTO.DatosAlumnoDTO;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
 import uade.edu.ar.Cocinapp.Entidades.Rol;
@@ -19,6 +22,9 @@ import uade.edu.ar.Cocinapp.Repositorios.UsuarioRepository;
 
 @Service
 public class usuariosService {
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -128,21 +134,76 @@ public class usuariosService {
         return usuario;
     }
 
-        public String generarToken(Usuario usuario) {
+    public String generarToken(Usuario usuario) {
 
-            boolean esAlumno = alumnoRepository.existsById(usuario.getIdUsuario());
-            System.out.println("GENERAR TOKEN ID USUARIO: " + usuario.getIdUsuario());
+        boolean esAlumno = alumnoRepository.existsById(usuario.getIdUsuario());
+        System.out.println("GENERAR TOKEN ID USUARIO: " + usuario.getIdUsuario());
 
 
-        return Jwts.builder()
-                .setSubject(usuario.getEmail())
-                .claim("nombre", usuario.getNombre())
-                .claim("id", usuario.getIdUsuario())
-                .claim("nickname", usuario.getAlias())
-                .claim("rol", esAlumno ? "alumno" : "usuario") 
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
-                .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256)) //  clave para el token
-                .compact();
+    return Jwts.builder()
+            .setSubject(usuario.getEmail())
+            .claim("nombre", usuario.getNombre())
+            .claim("id", usuario.getIdUsuario())
+            .claim("nickname", usuario.getAlias())
+            .claim("rol", usuario.getRol().name()) 
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
+            .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256)) //  clave para el token
+            .compact();
+    }
+
+
+    public void editarBiografia(Long idUsuario, String biografia) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuario.setBiografia(biografia);
+        usuarioRepository.save(usuario);
+    }
+
+    public Usuario obtenerUsuario(Long idUsuario) {
+        return usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    public void convertirEnAlumno(Long idUsuario, DatosAlumnoDTO datos) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Cambiar el rol
+        usuario.setRol(Rol.ALUMNO);
+        usuarioRepository.save(usuario);
+
+        // "Subimos" el usuario a alumno usando el mismo ID
+        Alumno alumno = entityManager.find(Alumno.class, usuario.getIdUsuario());
+        if (alumno == null) {
+            alumno = new Alumno();
+            alumno.setIdUsuario(usuario.getIdUsuario());
+        }
+
+        // Copiamos todos los campos heredados (para estar seguros)
+        alumno.setAlias(usuario.getAlias());
+        alumno.setEmail(usuario.getEmail());
+        alumno.setPassword(usuario.getPassword());
+        alumno.setNombre(usuario.getNombre());
+        alumno.setDireccion(usuario.getDireccion());
+        alumno.setAvatar(usuario.getAvatar());
+        alumno.setBiografia(usuario.getBiografia());
+        alumno.setRol(Rol.ALUMNO);
+        alumno.setHabilitado(true);
+
+        // Campos específicos de Alumno
+        alumno.setFotoDniFrente(datos.getFotoDniFrente());
+        alumno.setFotoDniDorso(datos.getFotoDniDorso());
+        alumno.setNroTramiteDni(datos.getNroTramiteDni());
+        alumno.setNumeroTarjeta(datos.getNumeroTarjeta());
+
+        try {
+            alumno.setCuentaCorriente(Float.parseFloat(datos.getCuentaCorriente()));
+        } catch (NumberFormatException e) {
+            alumno.setCuentaCorriente(0f);
+        }
+
+        // Finalmente, guardamos usando merge
+        entityManager.merge(alumno);
     }
 }

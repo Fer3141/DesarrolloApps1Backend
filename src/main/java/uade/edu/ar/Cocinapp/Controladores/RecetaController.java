@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import uade.edu.ar.Cocinapp.DTO.RecetaDTO;
 import uade.edu.ar.Cocinapp.DTO.RecetaDetalleDTO;
 import uade.edu.ar.Cocinapp.DTO.RecetaResumenDTO;
-import uade.edu.ar.Cocinapp.Entidades.Receta;
+import uade.edu.ar.Cocinapp.Entidades.TipoReceta;
 import uade.edu.ar.Cocinapp.Servicios.recetasService;
 
 @RestController
@@ -154,4 +154,51 @@ public class RecetaController {
         }
     }
     
+    @GetMapping("/por-tipo")
+    public ResponseEntity<?> getRecetasPorTipo(@RequestParam String tipo) {
+        try {
+            TipoReceta tipoEnum = TipoReceta.valueOf(tipo.toUpperCase());
+            List<RecetaResumenDTO> resultado = recetaService.buscarRecetasPorTipo(tipoEnum);
+            return ResponseEntity.ok(resultado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Tipo de receta inválido. Debe ser: ENTRADA, PLATO_PRINCIPAL o POSTRE");
+        } catch (Exception e) {
+            System.out.println("Error al buscar recetas por tipo: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/por-usuario")
+    public ResponseEntity<?> getRecetasPorUsuario(@RequestParam String alias) {
+        try {
+            List<RecetaResumenDTO> resultado = recetaService.buscarRecetasPorUsuario(alias);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            System.out.println("Error al buscar recetas por usuario: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/por-ingrediente")
+    public ResponseEntity<?> getRecetasPorIngrediente(@RequestParam String nombre) {
+        try {
+            List<RecetaResumenDTO> resultado = recetaService.buscarRecetasPorIngrediente(nombre);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            System.out.println("Error al buscar recetas por ingrediente: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/sin-ingrediente")
+    public ResponseEntity<?> getRecetasSinIngrediente(@RequestParam String nombre) {
+        try {
+            List<RecetaResumenDTO> resultado = recetaService.buscarRecetasSinIngrediente(nombre);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            System.out.println("Error al buscar recetas sin ingrediente: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
