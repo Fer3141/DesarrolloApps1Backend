@@ -128,21 +128,21 @@ public class usuariosService {
         return usuario;
     }
 
-        public String generarToken(Usuario usuario) {
+    public String generarToken(Usuario usuario) {
 
-            boolean esAlumno = alumnoRepository.existsById(usuario.getIdUsuario());
-            System.out.println("GENERAR TOKEN ID USUARIO: " + usuario.getIdUsuario());
+        boolean esAlumno = alumnoRepository.existsById(usuario.getIdUsuario());
+        System.out.println("GENERAR TOKEN ID USUARIO: " + usuario.getIdUsuario());
 
 
-        return Jwts.builder()
-                .setSubject(usuario.getEmail())
-                .claim("nombre", usuario.getNombre())
-                .claim("id", usuario.getIdUsuario())
-                .claim("nickname", usuario.getAlias())
-                .claim("rol", esAlumno ? "alumno" : "usuario") 
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
-                .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256)) //  clave para el token
-                .compact();
+    return Jwts.builder()
+            .setSubject(usuario.getEmail())
+            .claim("nombre", usuario.getNombre())
+            .claim("id", usuario.getIdUsuario())
+            .claim("nickname", usuario.getAlias())
+            .claim("rol", usuario.getRol().name()) 
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
+            .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256)) //  clave para el token
+            .compact();
     }
 }
