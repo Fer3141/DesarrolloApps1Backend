@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import uade.edu.ar.Cocinapp.DTO.DatosAlumnoDTO;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
 import uade.edu.ar.Cocinapp.Entidades.Rol;
@@ -144,5 +145,50 @@ public class usuariosService {
             .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 día
             .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256)) //  clave para el token
             .compact();
+    }
+
+
+    public void editarBiografia(Long idUsuario, String biografia) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuario.setBiografia(biografia);
+        usuarioRepository.save(usuario);
+    }
+
+    public Usuario obtenerUsuario(Long idUsuario) {
+        return usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    public void convertirEnAlumno(Long idUsuario, DatosAlumnoDTO datos) {
+        Usuario original = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Crear nuevo alumno con el mismo ID
+        Alumno nuevo = new Alumno();
+        nuevo.setIdUsuario(original.getIdUsuario()); // mantiene ID
+        nuevo.setEmail(datos.getEmail());
+        nuevo.setAlias(datos.getAlias());
+        nuevo.setNombre(datos.getNombre());
+        nuevo.setPassword(datos.getPassword());
+        nuevo.setDireccion(datos.getDireccion());
+        nuevo.setAvatar(datos.getAvatar());
+        nuevo.setBiografia(datos.getBiografia());
+        nuevo.setHabilitado(true);
+        nuevo.setRol(Rol.ALUMNO);
+
+        // Datos neuvos del alumno
+        nuevo.setFotoDniFrente(datos.getFotoDniFrente());
+        nuevo.setFotoDniDorso(datos.getFotoDniDorso());
+        nuevo.setNroTramiteDni(datos.getNroTramiteDni());
+        nuevo.setNumeroTarjeta(datos.getNumeroTarjeta());
+
+        try {
+            nuevo.setCuentaCorriente(Float.parseFloat(datos.getCuentaCorriente()));
+        } catch (NumberFormatException e) {
+            nuevo.setCuentaCorriente(0f);
+        }
+
+        alumnoRepository.save(nuevo);
     }
 }

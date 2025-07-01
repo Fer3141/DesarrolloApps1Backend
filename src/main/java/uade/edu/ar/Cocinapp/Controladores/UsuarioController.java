@@ -188,7 +188,7 @@ public class UsuarioController {
         return ResponseEntity.ok("Ya existe un admin");
     }
 
-/*
+
     @PutMapping("/editar-biografia")
     public ResponseEntity<?> editarBiografia(@RequestHeader("Authorization") String authHeader, @RequestParam String biografia) {
         try {
@@ -288,16 +288,8 @@ public class UsuarioController {
     public ResponseEntity<String> convertirEnAlumno(@RequestHeader("Authorization") String authHeader,
                                                     @RequestBody DatosAlumnoDTO datos) {
         try {
-            // 1. Extraer el token
-            String json = authHeader.replace("AuthBearer ", "").trim();
-            String token = json.split(":")[1]
-                               .replace("\"", "")
-                               .replace("}", "")
-                               .trim();
-
-            System.out.println("TOKEN EXTRAÍDO → " + token);
-
-            // 2. Extraer el ID del usuario desde el token
+            // 1. Extraer el token JWT (limpiando "AuthBearer")
+            String token = authHeader.replace("AuthBearer ", "").trim();
             Claims claims = Jwts.parserBuilder()
                 .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()))
                 .build()
@@ -305,12 +297,11 @@ public class UsuarioController {
                 .getBody();
 
             Long idUsuario = Long.parseLong(claims.get("id").toString());
-            System.out.println("ID extraído del token: " + idUsuario);
 
-            // 3. Obtener los datos actuales del usuario
+            // 2. Obtener el usuario actual
             Usuario usuario = us.obtenerUsuario(idUsuario);
 
-            // 4. Copiar campos heredados necesarios para la conversión
+            // 3. Completar datos heredados en el DTO (por seguridad)
             datos.setAlias(usuario.getAlias());
             datos.setEmail(usuario.getEmail());
             datos.setPassword(usuario.getPassword());
@@ -319,20 +310,19 @@ public class UsuarioController {
             datos.setAvatar(usuario.getAvatar());
             datos.setBiografia(usuario.getBiografia());
 
-            // 5. Llamar al servicio
-           
+            // 4. Llamar al service
             us.convertirEnAlumno(idUsuario, datos);
 
             return ResponseEntity.ok("Ahora sos alumno");
 
         } catch (Exception e) {
-            System.out.println("⚠️ Error en /hacer-alumno: " + e.getMessage());
+            System.out.println("Error en /hacer-alumno: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
 
 
-*/
+
 
 
 
