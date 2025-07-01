@@ -285,23 +285,13 @@ public class UsuarioController {
     
     
     @PutMapping("/hacer-alumno")
-    public ResponseEntity<String> convertirEnAlumno(@RequestHeader("Authorization") String authHeader,
+    public ResponseEntity<String> convertirEnAlumno(@RequestParam Long idUsuario,
                                                     @RequestBody DatosAlumnoDTO datos) {
         try {
-            // 1. Extraer el token JWT (limpiando "AuthBearer")
-            String token = authHeader.replace("AuthBearer ", "").trim();
-            Claims claims = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor("clave_super_secreta_de_32_chars!!!".getBytes()))
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-            Long idUsuario = Long.parseLong(claims.get("id").toString());
-
-            // 2. Obtener el usuario actual
+            // Obtener el usuario actual
             Usuario usuario = us.obtenerUsuario(idUsuario);
 
-            // 3. Completar datos heredados en el DTO (por seguridad)
+            // Copiar campos comunes del usuario al DTO
             datos.setAlias(usuario.getAlias());
             datos.setEmail(usuario.getEmail());
             datos.setPassword(usuario.getPassword());
@@ -310,13 +300,13 @@ public class UsuarioController {
             datos.setAvatar(usuario.getAvatar());
             datos.setBiografia(usuario.getBiografia());
 
-            // 4. Llamar al service
+            // Llamar al service
             us.convertirEnAlumno(idUsuario, datos);
 
             return ResponseEntity.ok("Ahora sos alumno");
 
         } catch (Exception e) {
-            System.out.println("Error en /hacer-alumno: " + e.getMessage());
+            System.out.println("⚠️ Error en /hacer-alumno: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
