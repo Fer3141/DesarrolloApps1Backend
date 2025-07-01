@@ -54,7 +54,8 @@ public class recetasService {
         receta.setPorciones(dto.porciones);
         receta.setCantidadPersonas(dto.cantidadPersonas);
         receta.setFotoPrincipal(dto.fotoPrincipal);
-        receta.setIdTipo(dto.idTipo);
+        receta.setTipo(dto.tipo);
+
 
         //ESTADO INICIAL: pendiente a aprobar
         receta.setAprobada(false);
@@ -169,7 +170,7 @@ public class recetasService {
         dto.fotoPrincipal = receta.getFotoPrincipal();
         dto.porciones = receta.getPorciones();
         dto.cantidadPersonas = receta.getCantidadPersonas();
-        dto.idTipo = receta.getIdTipo();
+        dto.tipo = receta.getTipo();
         dto.nombreUsuario = receta.getUsuario().getAlias();
 
         // ingredientes usados en la receta
@@ -378,7 +379,7 @@ public class recetasService {
         receta.setPorciones(dto.porciones);
         receta.setCantidadPersonas(dto.cantidadPersonas);
         receta.setFotoPrincipal(dto.fotoPrincipal);
-        receta.setIdTipo(dto.idTipo);
+        receta.setTipo(dto.tipo);
 
         // Reiniciar estado de revisión
         receta.setAprobada(false);
@@ -513,5 +514,103 @@ public class recetasService {
 
         correoService.enviarNotificacionRechazo(emailDestino, nombreReceta, motivo);
     }
+
+    public List<RecetaResumenDTO> buscarRecetasPorTipo(TipoReceta tipo) {
+        List<Receta> lista = recetaRepo.findByAprobadaTrueAndTipoOrderByIdRecetaDesc(tipo);
+
+        List<RecetaResumenDTO> resultado = new ArrayList<>();
+
+        for (Receta r : lista) {
+            double promedio = calificacionRepo.findAll().stream()
+                    .filter(c -> c.getReceta().getIdReceta().equals(r.getIdReceta()))
+                    .mapToInt(c -> c.getCalificacion())
+                    .average()
+                    .orElse(0);
+
+            resultado.add(new RecetaResumenDTO(
+                    r.getIdReceta(),
+                    r.getNombreReceta(),
+                    r.getFotoPrincipal(),
+                    r.getUsuario().getAlias(),
+                    promedio
+            ));
+        }
+
+        return resultado;
+    }
+
+
+    public List<RecetaResumenDTO> buscarRecetasPorUsuario(String alias) {
+        List<Receta> lista = recetaRepo.findByUsuario_AliasIgnoreCaseAndAprobadaTrueOrderByIdRecetaDesc(alias);
+
+        List<RecetaResumenDTO> resultado = new ArrayList<>();
+
+        for (Receta r : lista) {
+            double promedio = calificacionRepo.findAll().stream()
+                    .filter(c -> c.getReceta().getIdReceta().equals(r.getIdReceta()))
+                    .mapToInt(c -> c.getCalificacion())
+                    .average()
+                    .orElse(0);
+
+            resultado.add(new RecetaResumenDTO(
+                    r.getIdReceta(),
+                    r.getNombreReceta(),
+                    r.getFotoPrincipal(),
+                    r.getUsuario().getAlias(),
+                    promedio
+            ));
+        }
+
+        return resultado;
+    }
+
+    public List<RecetaResumenDTO> buscarRecetasPorIngrediente(String nombreIngrediente) {
+        List<Receta> lista = recetaRepo.findByIngrediente(nombreIngrediente);
+
+        List<RecetaResumenDTO> resultado = new ArrayList<>();
+
+        for (Receta r : lista) {
+            double promedio = calificacionRepo.findAll().stream()
+                    .filter(c -> c.getReceta().getIdReceta().equals(r.getIdReceta()))
+                    .mapToInt(c -> c.getCalificacion())
+                    .average()
+                    .orElse(0);
+
+            resultado.add(new RecetaResumenDTO(
+                    r.getIdReceta(),
+                    r.getNombreReceta(),
+                    r.getFotoPrincipal(),
+                    r.getUsuario().getAlias(),
+                    promedio
+            ));
+        }
+
+        return resultado;
+    }
+
+    public List<RecetaResumenDTO> buscarRecetasSinIngrediente(String nombreIngrediente) {
+        List<Receta> lista = recetaRepo.findRecetasSinIngrediente(nombreIngrediente);
+
+        List<RecetaResumenDTO> resultado = new ArrayList<>();
+
+        for (Receta r : lista) {
+            double promedio = calificacionRepo.findAll().stream()
+                    .filter(c -> c.getReceta().getIdReceta().equals(r.getIdReceta()))
+                    .mapToInt(c -> c.getCalificacion())
+                    .average()
+                    .orElse(0);
+
+            resultado.add(new RecetaResumenDTO(
+                    r.getIdReceta(),
+                    r.getNombreReceta(),
+                    r.getFotoPrincipal(),
+                    r.getUsuario().getAlias(),
+                    promedio
+            ));
+        }
+
+        return resultado;
+    }
+
 }
 
