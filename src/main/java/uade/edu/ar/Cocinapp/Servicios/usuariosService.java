@@ -161,19 +161,32 @@ public class usuariosService {
     }
 
     public void convertirEnAlumno(Long idUsuario, DatosAlumnoDTO datos) {
-        Usuario original = usuarioRepository.findById(idUsuario)
+        Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        original.setRol(Rol.ALUMNO);
-        usuarioRepository.save(original);
 
-        // Crear nuevo alumno con el mismo ID
+        // Cambiamos el rol
+        usuario.setRol(Rol.ALUMNO);
+        usuarioRepository.save(usuario); // Actualiza el usuario existente con rol nuevo
+
+        // Creamos la entrada en la tabla alumnos
         Alumno alumno = new Alumno();
-        alumno.setIdUsuario(original.getIdUsuario()); // 👈 ID igual al usuario
+
+        alumno.setIdUsuario(usuario.getIdUsuario());
+        alumno.setAlias(usuario.getAlias());
+        alumno.setEmail(usuario.getEmail());
+        alumno.setPassword(usuario.getPassword());
+        alumno.setNombre(usuario.getNombre());
+        alumno.setDireccion(usuario.getDireccion());
+        alumno.setAvatar(usuario.getAvatar());
+        alumno.setBiografia(usuario.getBiografia());
+        alumno.setHabilitado(true);
+        alumno.setRol(Rol.ALUMNO);
+
+        // Datos extra 
         alumno.setFotoDniFrente(datos.getFotoDniFrente());
         alumno.setFotoDniDorso(datos.getFotoDniDorso());
         alumno.setNroTramiteDni(datos.getNroTramiteDni());
         alumno.setNumeroTarjeta(datos.getNumeroTarjeta());
-
 
         try {
             alumno.setCuentaCorriente(Float.parseFloat(datos.getCuentaCorriente()));
@@ -181,6 +194,6 @@ public class usuariosService {
             alumno.setCuentaCorriente(0f);
         }
 
-        alumnoRepository.save(alumno);
+        alumnoRepository.save(alumno); // 
     }
 }
