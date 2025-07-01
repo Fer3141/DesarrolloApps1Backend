@@ -163,32 +163,24 @@ public class usuariosService {
     public void convertirEnAlumno(Long idUsuario, DatosAlumnoDTO datos) {
         Usuario original = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        original.setRol(Rol.ALUMNO);
+        usuarioRepository.save(original);
 
         // Crear nuevo alumno con el mismo ID
-        Alumno nuevo = new Alumno();
-        nuevo.setIdUsuario(original.getIdUsuario()); // mantiene ID
-        nuevo.setEmail(datos.getEmail());
-        nuevo.setAlias(datos.getAlias());
-        nuevo.setNombre(datos.getNombre());
-        nuevo.setPassword(datos.getPassword());
-        nuevo.setDireccion(datos.getDireccion());
-        nuevo.setAvatar(datos.getAvatar());
-        nuevo.setBiografia(datos.getBiografia());
-        nuevo.setHabilitado(true);
-        nuevo.setRol(Rol.ALUMNO);
+        Alumno alumno = new Alumno();
+        alumno.setIdUsuario(original.getIdUsuario()); // 👈 ID igual al usuario
+        alumno.setFotoDniFrente(datos.getFotoDniFrente());
+        alumno.setFotoDniDorso(datos.getFotoDniDorso());
+        alumno.setNroTramiteDni(datos.getNroTramiteDni());
+        alumno.setNumeroTarjeta(datos.getNumeroTarjeta());
 
-        // Datos neuvos del alumno
-        nuevo.setFotoDniFrente(datos.getFotoDniFrente());
-        nuevo.setFotoDniDorso(datos.getFotoDniDorso());
-        nuevo.setNroTramiteDni(datos.getNroTramiteDni());
-        nuevo.setNumeroTarjeta(datos.getNumeroTarjeta());
 
         try {
-            nuevo.setCuentaCorriente(Float.parseFloat(datos.getCuentaCorriente()));
+            alumno.setCuentaCorriente(Float.parseFloat(datos.getCuentaCorriente()));
         } catch (NumberFormatException e) {
-            nuevo.setCuentaCorriente(0f);
+            alumno.setCuentaCorriente(0f);
         }
 
-        alumnoRepository.save(nuevo);
+        alumnoRepository.save(alumno);
     }
 }
