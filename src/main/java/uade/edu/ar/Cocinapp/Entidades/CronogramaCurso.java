@@ -33,5 +33,6 @@ public class CronogramaCurso { // cuando y donde se dicta ese curso, con cupos
     private int vacantesDisponibles;
     
     //Los QR se generan por cronograma, cada QR está en la tabla 'Multimedia' con su url y id.
-    private Path QRid;
+    @Lob
+    private String qRid;
 }

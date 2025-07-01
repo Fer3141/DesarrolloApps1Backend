@@ -23,7 +23,9 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 
+import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +33,7 @@ import java.time.LocalDateTime;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -184,7 +187,16 @@ public class CursoService {
             Path p = generarQRCode(textoQR, nombreArchivo);
             
             //Acá añadir linea donde se pasa el objeto al web service y se obtiene el url
-            cronograma.setQRid(p);
+            
+            byte[] bytes = null;
+			try {
+				bytes = Files.readAllBytes(p);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            String base64 = Base64.getEncoder().encodeToString(bytes);
+            cronograma.setQRid(p.toString());
             //Después ese URL se agrega en multimedia y se obtiene el nuevo ID
             //Long idMultimedia = mr.save(qr).getID();
             
