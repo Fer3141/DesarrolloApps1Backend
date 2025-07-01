@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.nio.file.Path;
 
 @Entity
 @Getter
@@ -32,5 +33,5 @@ public class CronogramaCurso { // cuando y donde se dicta ese curso, con cupos
     private int vacantesDisponibles;
     
     //Los QR se generan por cronograma, cada QR está en la tabla 'Multimedia' con su url y id.
-    private Long QRid;
+    private Path QRid;
 }

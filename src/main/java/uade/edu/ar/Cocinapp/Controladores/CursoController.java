@@ -57,26 +57,20 @@ public class CursoController {
         }
     }
     
-    /* 
-    @PostMapping("/asistencia/checkin")
-    public ResponseEntity<?> marcarAsistencia(
+    @PostMapping("/asistencia/checkin-qr")
+    public ResponseEntity<?> marcarAsistenciaPorQR(
         @RequestParam Long idAlumno,
-        @RequestParam Long idCurso,
-        @RequestParam Long idCronograma) {
+        @RequestParam String qr) {
 
         try {
-        	boolean estaInscripto = inscripcionRepo.existsByAlumno_IdUsuarioAndCronograma_IdCronograma(idAlumno, idCronograma);
-        	if (!estaInscripto) {
-        	    throw new RuntimeException("El alumno no está inscripto en ese cronograma");
-        	} else {
-        		as.marcarAsistencia(idAlumno, idCurso, idCronograma);
-        		return ResponseEntity.ok("Asistencia registrada correctamente.");
-            }
+            cursoService.marcarAsistenciaPorQR(idAlumno, qr);
+            return ResponseEntity.ok("Asistencia registrada correctamente.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-*/
+
+
     @PostMapping("/crearCurso")
     public ResponseEntity<?> crearCurso(@RequestBody Curso curso) {
         try {

@@ -5,11 +5,13 @@ import org.springframework.stereotype.Service;
 import uade.edu.ar.Cocinapp.DTO.CursoDisponibleDTO;
 import uade.edu.ar.Cocinapp.DTO.CursoInscriptoDTO;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
+import uade.edu.ar.Cocinapp.Entidades.AsistenciaCurso;
 import uade.edu.ar.Cocinapp.Entidades.CronogramaCurso;
 import uade.edu.ar.Cocinapp.Entidades.Curso;
 import uade.edu.ar.Cocinapp.Entidades.InscripcionCurso;
 import uade.edu.ar.Cocinapp.Entidades.Sede;
 import uade.edu.ar.Cocinapp.Repositorios.AlumnoRepository;
+import uade.edu.ar.Cocinapp.Repositorios.AsistenciaCursoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.CronogramaCursoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.CursoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.InscripcionCursoRepository;
@@ -24,11 +26,15 @@ import com.google.zxing.common.BitMatrix;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 
 @Service
 public class CursoService {
@@ -51,7 +57,7 @@ public class CursoService {
     
     
     @Autowired
-    private MultimediaRepository mr;
+    private AsistenciaCursoRepository acr;
     
 
     // devuelve todos los cursos disponibles con datos de curso, sede, fechas y promo
@@ -133,7 +139,7 @@ public class CursoService {
         return resultado;
     }
         
-        public void generarQRCode(String texto, String nombreArchivo) {
+        public Path generarQRCode(String texto, String nombreArchivo) {
             try {
                 String ruta = "qr-codes/" + nombreArchivo + ".png";
                 int width = 300;
@@ -145,7 +151,7 @@ public class CursoService {
                 Path path = FileSystems.getDefault().getPath(ruta);
                 MatrixToImageWriter.writeToPath(matrix, "PNG", path);
 
-                System.out.println("QR generado en: " + path.toAbsolutePath());
+                return path.toAbsolutePath();
             } catch (Exception e) {
                 throw new RuntimeException("Error al generar QR", e);
             }
@@ -154,7 +160,6 @@ public class CursoService {
         
         @Transactional
         public Curso crearCurso(Curso curso) {
-        	//generarQRCode("curso: " + curso.getIdCurso(), "cronograma: " + crono.getIdCronograma());
             return cursoRepo.save(curso);
         }
         
@@ -176,20 +181,54 @@ public class CursoService {
          // ahora se genera el QR correspondiente
             String textoQR = "curso:" + curso.getIdCurso() + ",cronograma:" + cronograma.getIdCronograma();
             String nombreArchivo = "qr-curso-" + curso.getIdCurso() + "-crono-" + cronograma.getIdCronograma();
-            generarQRCode(textoQR, nombreArchivo);
+            Path p = generarQRCode(textoQR, nombreArchivo);
             
             //Acá añadir linea donde se pasa el objeto al web service y se obtiene el url
-            // do the magic
+            cronograma.setQRid(p);
             //Después ese URL se agrega en multimedia y se obtiene el nuevo ID
             //Long idMultimedia = mr.save(qr).getID();
-            
-            //cronograma.setQRid(idMultimedia);
             
             cronogramaRepo.save(cronograma);
 
             return cronograma;
         }
 
+        @Transactional
+        public void marcarAsistenciaPorQR(Long idAlumno, String qrContenido) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, Integer> data = mapper.readValue(qrContenido, Map.class);
+
+                Long idCurso = data.get("idCurso").longValue();
+                Long idCronograma = data.get("idCronograma").longValue();
+
+                // Verificar si está inscripto
+                boolean inscripto = inscripcionRepo.existsByAlumno_IdUsuarioAndCronograma_IdCronograma(idAlumno, idCronograma);
+                if (!inscripto) {
+                    throw new RuntimeException("El alumno no está inscripto a ese curso/cronograma");
+                }
+
+                Alumno alumno = alumnoRepo.findById(idAlumno)
+                    .orElseThrow(() -> new RuntimeException("Alumno no encontrado"));
+                Curso curso = cursoRepo.findById(idCurso)
+                    .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
+                CronogramaCurso cronograma = cronogramaRepo.findById(idCronograma)
+                    .orElseThrow(() -> new RuntimeException("Cronograma no encontrado"));
+
+                // Guardar asistencia
+                AsistenciaCurso asistencia = new AsistenciaCurso();
+                asistencia.setAlumno(alumno);
+                asistencia.setCurso(curso);
+                asistencia.setCronograma(cronograma);
+                asistencia.setFechaHora(LocalDateTime.now());
+
+                acr.save(asistencia);
+            } catch (Exception e) {
+                throw new RuntimeException("Error procesando el QR: " + e.getMessage(), e);
+            }
+        }
+        
+        
 
         
 }
