@@ -14,6 +14,7 @@ import uade.edu.ar.Cocinapp.DTO.LoginResponseDTO;
 import uade.edu.ar.Cocinapp.DTO.PerfilDTO;
 import uade.edu.ar.Cocinapp.DTO.RegistroInicialRequest;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
+import uade.edu.ar.Cocinapp.Entidades.Rol;
 import uade.edu.ar.Cocinapp.Entidades.Usuario;
 import uade.edu.ar.Cocinapp.Repositorios.RegistroPendienteRepository;
 import uade.edu.ar.Cocinapp.Repositorios.UsuarioRepository;
@@ -171,6 +172,22 @@ public class UsuarioController {
         return ResponseEntity.ok("contraseña cambiada");
 }
     
+    @PostMapping("/crear-admin")
+    public ResponseEntity<?> crearAdmin() {
+        if (usuarioRepository.findByEmail("admin@admin.com").isEmpty()) {
+            Usuario admin = new Usuario();
+            admin.setEmail("admin@admin.com");
+            admin.setAlias("admin");
+            admin.setNombre("Administrador");
+            admin.setPassword("admin");
+            admin.setHabilitado(true);
+            admin.setRol(Rol.ADMIN);
+            usuarioRepository.save(admin);
+            return ResponseEntity.ok("Admin creado");
+        }
+        return ResponseEntity.ok("Ya existe un admin");
+    }
+
 /*
     @PutMapping("/editar-biografia")
     public ResponseEntity<?> editarBiografia(@RequestHeader("Authorization") String authHeader, @RequestParam String biografia) {
