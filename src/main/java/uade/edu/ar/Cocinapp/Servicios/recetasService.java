@@ -476,6 +476,10 @@ public class recetasService {
         return resultado;
     }
 
+    @Autowired
+    private CorreoService correoService;
+
+    
     public void aprobarReceta(Long idReceta) {
         Receta receta = recetaRepo.findById(idReceta)
                 .orElseThrow(() -> new RuntimeException("Receta no encontrada"));
@@ -485,6 +489,12 @@ public class recetasService {
         receta.setMotivoRechazo(null);
 
         recetaRepo.save(receta);
+
+        // enviar mail al autor diciendo que se aprobo
+        String emailDestino = receta.getUsuario().getEmail();
+        String nombreReceta = receta.getNombreReceta();
+
+        correoService.enviarNotificacionAprobacion(emailDestino, nombreReceta);
     }
 
     public void rechazarReceta(Long idReceta, String motivo) {
@@ -496,6 +506,12 @@ public class recetasService {
         receta.setMotivoRechazo(motivo);
 
         recetaRepo.save(receta);
+
+        // enviar mail al autor de la receta diciendo que se rechazo
+        String emailDestino = receta.getUsuario().getEmail();
+        String nombreReceta = receta.getNombreReceta();
+
+        correoService.enviarNotificacionRechazo(emailDestino, nombreReceta, motivo);
     }
 }
 
