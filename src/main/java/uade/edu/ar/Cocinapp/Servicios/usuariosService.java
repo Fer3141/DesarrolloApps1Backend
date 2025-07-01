@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import uade.edu.ar.Cocinapp.DTO.DatosAlumnoDTO;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
 import uade.edu.ar.Cocinapp.Entidades.RegistroPendiente;
@@ -20,6 +22,9 @@ import uade.edu.ar.Cocinapp.Repositorios.UsuarioRepository;
 
 @Service
 public class usuariosService {
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -164,14 +169,18 @@ public class usuariosService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Cambiamos el rol
+        // Cambiar el rol
         usuario.setRol(Rol.ALUMNO);
-        usuarioRepository.save(usuario); // Actualiza el usuario existente con rol nuevo
+        usuarioRepository.save(usuario);
 
-        // Creamos la entrada en la tabla alumnos
-        Alumno alumno = new Alumno();
+        // "Subimos" el usuario a alumno usando el mismo ID
+        Alumno alumno = entityManager.find(Alumno.class, usuario.getIdUsuario());
+        if (alumno == null) {
+            alumno = new Alumno();
+            alumno.setIdUsuario(usuario.getIdUsuario());
+        }
 
-        alumno.setIdUsuario(usuario.getIdUsuario());
+        // Copiamos todos los campos heredados (para estar seguros)
         alumno.setAlias(usuario.getAlias());
         alumno.setEmail(usuario.getEmail());
         alumno.setPassword(usuario.getPassword());
@@ -179,10 +188,10 @@ public class usuariosService {
         alumno.setDireccion(usuario.getDireccion());
         alumno.setAvatar(usuario.getAvatar());
         alumno.setBiografia(usuario.getBiografia());
-        alumno.setHabilitado(true);
         alumno.setRol(Rol.ALUMNO);
+        alumno.setHabilitado(true);
 
-        // Datos extra 
+        // Campos específicos de Alumno
         alumno.setFotoDniFrente(datos.getFotoDniFrente());
         alumno.setFotoDniDorso(datos.getFotoDniDorso());
         alumno.setNroTramiteDni(datos.getNroTramiteDni());
@@ -194,6 +203,7 @@ public class usuariosService {
             alumno.setCuentaCorriente(0f);
         }
 
-        alumnoRepository.save(alumno); // 
+        // Finalmente, guardamos usando merge
+        entityManager.merge(alumno);
     }
 }
