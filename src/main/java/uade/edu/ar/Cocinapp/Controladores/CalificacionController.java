@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uade.edu.ar.Cocinapp.DTO.CalificacionDTO;
+import uade.edu.ar.Cocinapp.DTO.CalificacionVistaDTO;
 import uade.edu.ar.Cocinapp.Entidades.Calificacion;
 import uade.edu.ar.Cocinapp.Servicios.CalificacionService;
 
@@ -62,7 +63,7 @@ public class CalificacionController {
     
     @GetMapping("/comentarios/pendientes")
     public ResponseEntity<?> verComentariosPendientes() {
-        List<Calificacion> pendientes = calificacionService.obtenerComentariosPendientes();
+        List<CalificacionVistaDTO> pendientes = calificacionService.obtenerPendientesDTO();
         return ResponseEntity.ok(pendientes);
     }
 

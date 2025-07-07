@@ -76,6 +76,18 @@ public class CalificacionService {
     }
     
 
+    public List<CalificacionVistaDTO> obtenerPendientesDTO() {
+        return calificacionRepo.findByAprobadoFalse().stream()
+            .map(c -> new CalificacionVistaDTO(
+                c.getUsuario().getAlias(),                 
+                c.getCalificacion(),                     
+                c.getComentarios(),                  
+                Boolean.TRUE.equals(c.isAprobado()),   
+                c.getReceta().getNombreReceta(),       
+                c.getIdCalificacion()                  
+            ))
+            .collect(Collectors.toList());
+    }
 
 
 }
