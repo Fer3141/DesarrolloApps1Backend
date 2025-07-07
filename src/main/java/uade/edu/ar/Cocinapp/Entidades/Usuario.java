@@ -3,8 +3,8 @@ package uade.edu.ar.Cocinapp.Entidades;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "usuarios")
 @Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "usuarios")
 public class Usuario {
 
     @Id

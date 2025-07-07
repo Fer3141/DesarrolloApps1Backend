@@ -222,10 +222,14 @@ public class UsuarioController {
 
 
     
-    @PutMapping("/hacer-alumno") // NO ANDA :(
-    public ResponseEntity<String> convertirEnAlumno(@RequestParam Long idUsuario,
-                                                    @RequestBody DatosAlumnoDTO datos) {
+    @PutMapping("/hacer-alumno/{idUsuario}") // NO ANDA :(
+    public ResponseEntity<String> convertirEnAlumno(@PathVariable Long idUsuario, @RequestBody DatosAlumnoDTO datos) {
         try {
+        	
+        	System.out.println("Recibido ID usuario: " + idUsuario);
+            System.out.println("Datos recibidos:");
+            System.out.println("Requerimientos: " + datos.getNroTramiteDni());
+            System.out.println("Tarjeta: " + datos.getNumeroTarjeta());
             // Obtener el usuario actual
             Usuario usuario = us.obtenerUsuario(idUsuario);
 
@@ -244,7 +248,7 @@ public class UsuarioController {
             return ResponseEntity.ok("Ahora sos alumno");
 
         } catch (Exception e) {
-            System.out.println("⚠️ Error en /hacer-alumno: " + e.getMessage());
+            System.out.println("Error en /hacer-alumno: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }

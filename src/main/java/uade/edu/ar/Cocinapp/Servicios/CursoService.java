@@ -65,10 +65,15 @@ public class CursoService {
 
     // devuelve todos los cursos disponibles con datos de curso, sede, fechas y promo
     public List<CursoDisponibleDTO> obtenerCursosDisponibles() {
-        List<CronogramaCurso> cronos = cronogramaRepo.findAll();
+        List<CronogramaCurso> cronos = cronogramaRepo.findAllWithCursoAndSede();
 
         List<CursoDisponibleDTO> resultado = new ArrayList<>();
         for (CronogramaCurso c : cronos) {
+            if (c.getCurso() == null || c.getSede() == null) {
+                System.out.println("⚠️ Cronograma sin curso o sede: id=" + c.getIdCronograma());
+                continue; // salta este cronograma
+            }
+
             CursoDisponibleDTO dto = new CursoDisponibleDTO();
             dto.idCronograma = c.getIdCronograma();
             dto.descripcionCurso = c.getCurso().getDescripcion();
@@ -79,16 +84,18 @@ public class CursoService {
             dto.fechaFin = c.getFechaFin();
             dto.vacantes = c.getVacantesDisponibles();
 
-            // aplicar descuento de la sede si tiene promoción
             double base = c.getCurso().getPrecio();
-            double descuento = c.getSede().getPromocionCursos(); // porcentaje
+            double descuento = c.getSede().getPromocionCursos(); // %
             dto.precioFinal = base - (base * descuento / 100);
 
             resultado.add(dto);
         }
 
+        System.out.println("Cursos disponibles:");
+        resultado.forEach(c -> System.out.println(c.descripcionCurso + " - " + c.sede));
         return resultado;
     }
+
 
     @Transactional
     public void inscribirseACurso(Long idAlumno, Long idCronograma) {

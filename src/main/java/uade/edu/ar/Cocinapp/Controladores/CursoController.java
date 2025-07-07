@@ -28,6 +28,7 @@ public class CursoController {
             return ResponseEntity.ok(cursoService.obtenerCursosDisponibles());
         } catch (Exception e) {
             System.out.println("error al listar cursos: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(500).body("error interno");
         }
     }

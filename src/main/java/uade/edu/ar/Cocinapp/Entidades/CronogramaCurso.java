@@ -18,12 +18,12 @@ public class CronogramaCurso { // cuando y donde se dicta ese curso, con cupos
     private Long idCronograma;
 
     // relacion con curso
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idCurso")
     private Curso curso;
 
     // relacion con sede
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idSede")
     private Sede sede;
 

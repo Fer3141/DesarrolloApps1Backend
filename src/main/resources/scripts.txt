@@ -6,3 +6,23 @@ ADD aprobado BOOLEAN DEFAULT false;
 INSERT INTO public.usuarios(
 	idusuario, nickname, avatar, biografia, direccion, mail, habilitado, nombre, password, rol)
 	VALUES (2, 'admin', NULL, NULL, NULL, 'admin@admin.com', TRUE, 'admin', '123', 'ADMIN');
+	
+	
+	
+	
+	
+CREAR SEDE POSTMAN
+POST http://localhost:8080/sedes
+
+
+{
+  "nombreSede": "Sede Palermo",
+  "direccionSede": "Av. Santa Fe 1234",
+  "telefonoSede": "011-4444-5555",
+  "mailSede": "palermo@cocinapp.com",
+  "whatsApp": "+54 9 11 4444 5555",
+  "tipoBonificacion": "descuento",
+  "bonificacionCursos": 10.0,
+  "tipoPromocion": "promo invierno",
+  "promocionCursos": 15.0
+}

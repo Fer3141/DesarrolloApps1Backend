@@ -3,8 +3,10 @@ package uade.edu.ar.Cocinapp.Servicios;
 import java.util.Date;
 import java.util.Optional;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -165,45 +167,36 @@ public class usuariosService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
+    @Transactional
     public void convertirEnAlumno(Long idUsuario, DatosAlumnoDTO datos) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Cambiar el rol
+        // Cambiar el rol (opcional si ya está en ALUMNO)
         usuario.setRol(Rol.ALUMNO);
         usuarioRepository.save(usuario);
 
-        // "Subimos" el usuario a alumno usando el mismo ID
-        Alumno alumno = entityManager.find(Alumno.class, usuario.getIdUsuario());
-        if (alumno == null) {
-            alumno = new Alumno();
-            alumno.setIdUsuario(usuario.getIdUsuario());
+        Float cuentaCorriente = 0f;
+        if (datos.getCuentaCorriente() != null && !datos.getCuentaCorriente().trim().isEmpty()) {
+            try {
+                cuentaCorriente = Float.parseFloat(datos.getCuentaCorriente().trim());
+            } catch (NumberFormatException e) {
+                cuentaCorriente = 0f;
+            }
         }
 
-        // Copiamos todos los campos heredados (para estar seguros)
-        alumno.setAlias(usuario.getAlias());
-        alumno.setEmail(usuario.getEmail());
-        alumno.setPassword(usuario.getPassword());
-        alumno.setNombre(usuario.getNombre());
-        alumno.setDireccion(usuario.getDireccion());
-        alumno.setAvatar(usuario.getAvatar());
-        alumno.setBiografia(usuario.getBiografia());
-        alumno.setRol(Rol.ALUMNO);
-        alumno.setHabilitado(true);
-
-        // Campos específicos de Alumno
-        alumno.setFotoDniFrente(datos.getFotoDniFrente());
-        alumno.setFotoDniDorso(datos.getFotoDniDorso());
-        alumno.setNroTramiteDni(datos.getNroTramiteDni());
-        alumno.setNumeroTarjeta(datos.getNumeroTarjeta());
-
-        try {
-            alumno.setCuentaCorriente(Float.parseFloat(datos.getCuentaCorriente()));
-        } catch (NumberFormatException e) {
-            alumno.setCuentaCorriente(0f);
-        }
-
-        // Finalmente, guardamos usando merge
-        entityManager.merge(alumno);
+        alumnoRepository.insertarAlumno(
+            idUsuario,
+            datos.getNumeroTarjeta(),
+            cuentaCorriente,
+            datos.getFotoDniFrente(),
+            datos.getFotoDniDorso(),
+            datos.getNroTramiteDni()
+        );
     }
+
+
+
+
+
 }
