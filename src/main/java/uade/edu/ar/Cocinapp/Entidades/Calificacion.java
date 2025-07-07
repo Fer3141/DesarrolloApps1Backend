@@ -21,6 +21,8 @@ public class Calificacion {
     private int calificacion;
 
     private String comentarios;
+    
+    private boolean aprobado;
 
     public Calificacion() {}
 
@@ -65,4 +67,14 @@ public class Calificacion {
     public void setComentarios(String comentarios) {
         this.comentarios = comentarios;
     }
+
+	public boolean isAprobado() {
+		return aprobado;
+	}
+
+	public void setAprobado(boolean aprobado) {
+		this.aprobado = aprobado;
+	}
+    
+    
 }

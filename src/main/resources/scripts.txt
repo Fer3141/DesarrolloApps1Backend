@@ -1,1 +1,8 @@
 ALTER TABLE usuarios ADD biografia TEXT;
+
+ALTER TABLE calificaciones
+ADD aprobado BOOLEAN DEFAULT false;
+
+INSERT INTO public.usuarios(
+	idusuario, nickname, avatar, biografia, direccion, mail, habilitado, nombre, password, rol)
+	VALUES (2, 'admin', NULL, NULL, NULL, 'admin@admin.com', TRUE, 'admin', '123', 'ADMIN');
