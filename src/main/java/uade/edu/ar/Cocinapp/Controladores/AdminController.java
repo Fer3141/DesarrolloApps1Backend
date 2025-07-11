@@ -48,18 +48,12 @@ public class AdminController {
 
     // traer todas las recetas pendientes de aprobacion
     @GetMapping("/recetas/pendientes")
-    public ResponseEntity<?> getRecetasPendientes(@RequestParam Long idUsuario) {
+    public ResponseEntity<?> getRecetasPendientes() {
         try {
-            Usuario u = usuarioRepo.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-            if (u.getRol() != Rol.ADMIN) {
-                throw new RuntimeException("No tenés permisos para acceder a este recurso");
-            }
-
+            // Si querés dejar una validación mínima:
+            // Podrías sacar este control o hardcodear si hace falta
             List<RecetaResumenDTO> resultado = recetaService.obtenerRecetasPendientes();
             return ResponseEntity.ok(resultado);
-
         } catch (Exception e) {
             System.out.println("Error al obtener recetas pendientes: " + e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
