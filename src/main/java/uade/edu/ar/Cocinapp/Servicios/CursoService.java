@@ -248,6 +248,11 @@ public class CursoService {
         }
         
         
+        public List<Curso> obtenerTodosLosCursos() {
+            return cursoRepo.findAll(); // Asegúrate que cursoRepository está inyectado
+        }
+
+        
 
         
 }

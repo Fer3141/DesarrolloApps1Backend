@@ -1,8 +1,10 @@
 package uade.edu.ar.Cocinapp.Controladores;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +33,16 @@ public class CursoController {
             e.printStackTrace();
             return ResponseEntity.status(500).body("error interno");
         }
+    }
+    
+    @GetMapping("/obtenerCursos")
+    public ResponseEntity<?> obtenerCursos() {
+    	 try {
+    	        List<Curso> cursos = cursoService.obtenerTodosLosCursos();
+    	        return ResponseEntity.ok(cursos);
+    	    } catch (Exception e) {
+    	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener los cursos");
+    	    }
     }
 
     // sirve para inscribir un alumno a un curso
