@@ -54,6 +54,8 @@ public class CursoController {
             @RequestParam Long idCronograma) {
 
         try {
+        	System.out.println("ID Alumno recibido: " + idAlumno);
+            System.out.println("ID Cronograma recibido: " + idCronograma);
             cursoService.inscribirseACurso(idAlumno, idCronograma);
             return ResponseEntity.ok("inscripción realizada con éxito");
         } catch (Exception e) {
