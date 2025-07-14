@@ -15,6 +15,6 @@ public class Ingrediente {
     private String nombre;
 
     @ManyToOne
-    @JoinColumn(name = "idReceta", nullable = false)
+    @JoinColumn(name = "id_receta", nullable = false)
     private Receta receta;
 }
