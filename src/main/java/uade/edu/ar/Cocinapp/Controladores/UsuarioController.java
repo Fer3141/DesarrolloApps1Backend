@@ -222,7 +222,7 @@ public class UsuarioController {
 
 
     
-    @PutMapping("/hacer-alumno/{idUsuario}") // NO ANDA :(
+    @PutMapping("/hacer-alumno/{idUsuario}") 
     public ResponseEntity<String> convertirEnAlumno(@PathVariable Long idUsuario, @RequestBody DatosAlumnoDTO datos) {
         try {
         	

@@ -7,12 +7,15 @@ import uade.edu.ar.Cocinapp.DTO.CursoConCronogramasDTO;
 import uade.edu.ar.Cocinapp.DTO.CursoDisponibleDTO;
 import uade.edu.ar.Cocinapp.DTO.CursoInscriptoDTO;
 import uade.edu.ar.Cocinapp.DTO.CursoResumenDTO;
+import uade.edu.ar.Cocinapp.DTO.DatosAlumnoDTO;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
 import uade.edu.ar.Cocinapp.Entidades.AsistenciaCurso;
 import uade.edu.ar.Cocinapp.Entidades.CronogramaCurso;
 import uade.edu.ar.Cocinapp.Entidades.Curso;
 import uade.edu.ar.Cocinapp.Entidades.InscripcionCurso;
 import uade.edu.ar.Cocinapp.Entidades.Sede;
+import uade.edu.ar.Cocinapp.Entidades.Usuario;
+import uade.edu.ar.Cocinapp.Entidades.Rol;
 import uade.edu.ar.Cocinapp.Repositorios.AlumnoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.AsistenciaCursoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.CronogramaCursoRepository;
@@ -20,6 +23,7 @@ import uade.edu.ar.Cocinapp.Repositorios.CursoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.InscripcionCursoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.MultimediaRepository;
 import uade.edu.ar.Cocinapp.Repositorios.SedeRepository;
+import uade.edu.ar.Cocinapp.Repositorios.UsuarioRepository;
 import uade.edu.ar.Cocinapp.utils.CursoMapper;
 
 import com.google.zxing.BarcodeFormat;
@@ -42,6 +46,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,6 +64,13 @@ public class CursoService {
     @Autowired
     private InscripcionCursoRepository inscripcionRepo;
     
+    @Autowired
+    private usuariosService us;
+    
+    @Autowired
+    private UsuarioRepository ur;
+
+
     
     @Autowired
     private SedeRepository sedeRepository;
@@ -112,7 +124,68 @@ public class CursoService {
 
     @Transactional
     public void inscribirseACurso(Long idAlumno, Long idCronograma) {
+    	
+    	// Verifica si ya está inscripto
         if (inscripcionRepo.existsByAlumno_IdUsuarioAndCronograma_IdCronograma(idAlumno, idCronograma)) {
+            throw new RuntimeException("el alumno ya está inscripto en ese curso");
+        }
+
+        // Buscar al alumno (usuario con rol ALUMNO)
+        Alumno alumno = alumnoRepo.findById(idAlumno).orElse(null);
+
+        // Si no es alumno aún, lo convertimos
+        if (!alumnoRepo.existsById(idAlumno)) {
+            System.out.println("🔁 Usuario no era alumno. Se intenta convertir...");
+
+            Usuario usuario = us.obtenerUsuario(idAlumno);
+            DatosAlumnoDTO datos = new DatosAlumnoDTO();
+
+            // ⚠️ Estos campos DEBEN venir de alguna parte, si no hay info, setea algo de prueba o validá antes
+            datos.setNumeroTarjeta("1234567890");
+            datos.setNroTramiteDni("987654321");
+            datos.setFotoDniFrente("dni_frente.jpg");
+            datos.setFotoDniDorso("dni_dorso.jpg");
+
+            // Copiar datos comunes del usuario
+            datos.setAlias(usuario.getAlias());
+            datos.setEmail(usuario.getEmail());
+            datos.setPassword(usuario.getPassword());
+            datos.setNombre(usuario.getNombre());
+            datos.setDireccion(usuario.getDireccion());
+            datos.setAvatar(usuario.getAvatar());
+            datos.setBiografia(usuario.getBiografia());
+
+            // Ejecutar conversión
+            us.convertirEnAlumno(idAlumno, datos);
+        }
+
+
+        // Obtener cronograma
+        CronogramaCurso cronograma = cronogramaRepo.findById(idCronograma)
+                .orElseThrow(() -> new RuntimeException("cronograma no encontrado"));
+
+        if (cronograma.getVacantesDisponibles() <= 0) {
+            throw new RuntimeException("no hay vacantes disponibles");
+        }
+        
+        Optional<Usuario> user = ur.findById(idAlumno);
+
+        // Crear inscripción
+        InscripcionCurso inscripcion = new InscripcionCurso();
+        inscripcion.setAlumno(alumno);
+        inscripcion.setUsuario(user.get());
+        inscripcion.setCronograma(cronograma);
+
+        inscripcionRepo.save(inscripcion);
+
+        // Actualizar vacantes
+        cronograma.setVacantesDisponibles(cronograma.getVacantesDisponibles() - 1);
+        cronogramaRepo.save(cronograma);
+
+        System.out.println("✅ Inscripción realizada con éxito");
+    	
+    	
+        /*if (inscripcionRepo.existsByAlumno_IdUsuarioAndCronograma_IdCronograma(idAlumno, idCronograma)) {
             throw new RuntimeException("el alumno ya está inscripto en ese curso");
         }
 
@@ -159,7 +232,10 @@ public class CursoService {
             resultado.add(dto);
         }
 
-        return resultado;
+        return resultado;*/
+    	
+    	
+    	
     }
         
         public Path generarQRCode(String texto, String nombreArchivo) {
@@ -277,6 +353,36 @@ public class CursoService {
 		    return CursoMapper.mapearCurso(curso);
 
 		}
+
+
+
+		public List<CursoInscriptoDTO> obtenerCursosInscripto(Long idAlumno) {
+		    List<InscripcionCurso> inscripciones = inscripcionRepo.findByAlumno_IdUsuario(idAlumno);
+
+		    List<CursoInscriptoDTO> resultado = new ArrayList<>();
+		    for (InscripcionCurso i : inscripciones) {
+		        CronogramaCurso c = i.getCronograma();
+
+		        CursoInscriptoDTO dto = new CursoInscriptoDTO();
+		        dto.descripcionCurso = c.getCurso().getDescripcion();
+		        dto.modalidad = c.getCurso().getModalidad();
+		        dto.requerimientos = c.getCurso().getRequerimientos();
+		        dto.fechaInicio = c.getFechaInicio();
+		        dto.fechaFin = c.getFechaFin();
+		        dto.sede = c.getSede().getNombreSede();
+		        dto.direccion = c.getSede().getDireccionSede();
+
+		        // aplicar promo si la sede tiene
+		        double base = c.getCurso().getPrecio();
+		        double promo = c.getSede().getPromocionCursos();
+		        dto.precioFinal = base - (base * promo / 100);
+
+		        resultado.add(dto);
+		    }
+
+		    return resultado;
+		}
+
 
         
 

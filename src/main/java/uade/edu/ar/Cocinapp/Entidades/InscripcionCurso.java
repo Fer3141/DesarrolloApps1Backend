@@ -14,10 +14,14 @@ public class InscripcionCurso { //no estaba en el SQL, la agregamos
     private Long idInscripcion;
 
     @ManyToOne
-    @JoinColumn(name = "idAlumno")
-    private Alumno alumno;
+    @JoinColumn(name = "idUsuario")
+    private Usuario usuario;
 
     @ManyToOne
     @JoinColumn(name = "idCronograma")
     private CronogramaCurso cronograma;
+    
+    @ManyToOne
+    @JoinColumn(name = "idAlumno")
+    private Alumno alumno;
 }
