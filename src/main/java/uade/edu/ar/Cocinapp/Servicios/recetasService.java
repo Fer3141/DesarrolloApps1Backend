@@ -99,7 +99,7 @@ public class recetasService {
 
         // guardamos los pasos
         for (PasoCompletoDTO pasoDto : dto.pasos) {
-            pasos paso = new pasos();
+            Paso paso = new Paso();
             paso.setReceta(receta);
             paso.setNroPaso(pasoDto.nroPaso);
             paso.setTexto(pasoDto.texto);
@@ -186,9 +186,9 @@ public class recetasService {
         }
 
         // pasos con multimedia
-        List<pasos> pasos = pasoRepo.findByReceta_IdRecetaOrderByNroPasoAsc(id);
+        List<Paso> pasos = pasoRepo.findByReceta_IdRecetaOrderByNroPasoAsc(id);
         dto.pasos = new ArrayList<>();
-        for (pasos p : pasos) {
+        for (Paso p : pasos) {
             PasoCompletoDTO pasoDTO = new PasoCompletoDTO();
             pasoDTO.nroPaso = p.getNroPaso();
             pasoDTO.texto = p.getTexto();
@@ -421,7 +421,7 @@ public class recetasService {
 
         //Cargar nuevamente pasos y multimedia
         for (PasoCompletoDTO pasoDto : dto.pasos) {
-            pasos paso = new pasos();
+            Paso paso = new Paso();
             paso.setReceta(receta);
             paso.setNroPaso(pasoDto.nroPaso);
             paso.setTexto(pasoDto.texto);

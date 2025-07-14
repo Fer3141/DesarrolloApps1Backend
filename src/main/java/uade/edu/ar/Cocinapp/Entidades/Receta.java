@@ -59,10 +59,18 @@ public class Receta {
     private String motivoRechazo;
 
 
-    @OneToMany(mappedBy="receta", cascade=CascadeType.ALL, orphanRemoval=true)
-    private List<pasos> pasos;
+    @OneToMany(
+    mappedBy = "receta",
+    cascade = CascadeType.ALL,
+    orphanRemoval = true
+    )
+    private List<Paso> pasos;
 
-    @OneToMany(mappedBy="receta", cascade=CascadeType.ALL, orphanRemoval=true)
+    @OneToMany(
+    mappedBy = "receta",
+    cascade = CascadeType.ALL,
+    orphanRemoval = true
+    )
     private List<Ingrediente> ingredientes;
 
 

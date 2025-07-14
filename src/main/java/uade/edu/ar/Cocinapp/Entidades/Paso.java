@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "pasos")
-public class pasos {
+public class Paso {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,7 +62,7 @@ public class pasos {
 		this.texto = text;
 	}
 
-	public pasos() {
+	public Paso() {
 
 	}
 	

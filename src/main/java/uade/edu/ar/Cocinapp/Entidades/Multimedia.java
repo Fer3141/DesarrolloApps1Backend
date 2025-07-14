@@ -14,7 +14,7 @@ public class Multimedia {
 
     @ManyToOne
     @JoinColumn(name = "idPaso")
-    private pasos paso;
+    private Paso paso;
 
     private String tipo_contenido;
     private String extension;
