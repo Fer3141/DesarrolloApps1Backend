@@ -71,7 +71,7 @@ public class Receta {
     cascade = CascadeType.ALL,
     orphanRemoval = true
     )
-    private List<Ingrediente> ingredientes;
+    private List<Utilizado> utilizados;
 
 
 

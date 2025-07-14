@@ -13,8 +13,4 @@ public class Ingrediente {
     private int idIngrediente;
 
     private String nombre;
-
-    @ManyToOne
-    @JoinColumn(name = "id_receta", nullable = false)
-    private Receta receta;
 }
