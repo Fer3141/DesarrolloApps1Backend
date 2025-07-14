@@ -252,6 +252,28 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
+    
+    @GetMapping("/datos-cuenta-alumno")
+    public ResponseEntity<?> obtenerDatosCuentaAlumno(@RequestParam Long idUsuario) {
+        try {
+            DatosAlumnoDTO dto = us.obtenerDatosCuentaAlumno(idUsuario);
+            return ResponseEntity.ok(dto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + e.getMessage());
+        }
+    }
+    
+    
+    @PutMapping("/actualizar-cuenta-alumno")
+    public ResponseEntity<?> actualizarCuentaAlumno(@RequestParam Long idUsuario,
+                                                   @RequestBody DatosAlumnoDTO datos) {
+        try {
+            us.actualizarDatosCuentaAlumno(idUsuario, datos);
+            return ResponseEntity.ok("Datos de cuenta actualizados correctamente.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + e.getMessage());
+        }
+    }
 
 
 
