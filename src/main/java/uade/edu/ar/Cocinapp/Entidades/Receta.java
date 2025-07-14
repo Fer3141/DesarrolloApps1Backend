@@ -58,6 +58,16 @@ public class Receta {
     @Column(name = "motivo_rechazo")
     private String motivoRechazo;
 
+
+    @OneToMany(mappedBy="receta", cascade=CascadeType.ALL, orphanRemoval=true)
+    private List<pasos> pasos;
+
+    @OneToMany(mappedBy="receta", cascade=CascadeType.ALL, orphanRemoval=true)
+    private List<Ingrediente> ingredientes;
+
+
+
+
     // Getters y setters
 
     public Long getIdReceta() {
