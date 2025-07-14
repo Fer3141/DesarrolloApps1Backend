@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import uade.edu.ar.Cocinapp.DTO.CursoConCronogramasDTO;
 import uade.edu.ar.Cocinapp.Entidades.CronogramaCurso;
 import uade.edu.ar.Cocinapp.Entidades.Curso;
 import uade.edu.ar.Cocinapp.Servicios.AsistenciaService;
@@ -38,10 +39,11 @@ public class CursoController {
     @GetMapping("/obtenerCursos")
     public ResponseEntity<?> obtenerCursos() {
     	 try {
-    	        List<Curso> cursos = cursoService.obtenerTodosLosCursos();
-    	        return ResponseEntity.ok(cursos);
+    	        return ResponseEntity.ok(cursoService.obtenerCursosDisponibles2());
     	    } catch (Exception e) {
-    	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener los cursos");
+    	        System.out.println("error al listar cursos: " + e.getMessage());
+    	        e.printStackTrace();
+    	        return ResponseEntity.status(500).body("error interno");
     	    }
     }
 
@@ -110,6 +112,13 @@ public class CursoController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error al crear cronograma: " + e.getMessage());
         }
+    }
+    
+    
+    @GetMapping("/cursos/{id}")
+    public ResponseEntity<CursoConCronogramasDTO> detalleCurso(@PathVariable Long id) {
+    	  CursoConCronogramasDTO dto = cursoService.obtenerCursoConCronogramas(id);
+          return ResponseEntity.ok(dto);
     }
     
 }

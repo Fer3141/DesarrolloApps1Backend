@@ -2,8 +2,11 @@ package uade.edu.ar.Cocinapp.Servicios;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import uade.edu.ar.Cocinapp.DTO.CursoConCronogramasDTO;
 import uade.edu.ar.Cocinapp.DTO.CursoDisponibleDTO;
 import uade.edu.ar.Cocinapp.DTO.CursoInscriptoDTO;
+import uade.edu.ar.Cocinapp.DTO.CursoResumenDTO;
 import uade.edu.ar.Cocinapp.Entidades.Alumno;
 import uade.edu.ar.Cocinapp.Entidades.AsistenciaCurso;
 import uade.edu.ar.Cocinapp.Entidades.CronogramaCurso;
@@ -17,6 +20,7 @@ import uade.edu.ar.Cocinapp.Repositorios.CursoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.InscripcionCursoRepository;
 import uade.edu.ar.Cocinapp.Repositorios.MultimediaRepository;
 import uade.edu.ar.Cocinapp.Repositorios.SedeRepository;
+import uade.edu.ar.Cocinapp.utils.CursoMapper;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
@@ -38,12 +42,13 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CursoService {
 	
 	@Autowired
-    private CursoRepository cursoRepo;
+    private CursoRepository cursoRepository;
 
     @Autowired
     private CronogramaCursoRepository cronogramaRepo;
@@ -61,6 +66,14 @@ public class CursoService {
     
     @Autowired
     private AsistenciaCursoRepository acr;
+    
+    public List<CursoResumenDTO> obtenerCursosDisponibles2() {
+        List<Curso> cursos = cursoRepository.findAll(); // o filtrá los activos
+        return cursos.stream()
+                     .map(CursoMapper::mapearResumen)
+                     .collect(Collectors.toList());
+    }
+
     
 
     // devuelve todos los cursos disponibles con datos de curso, sede, fechas y promo
@@ -170,13 +183,13 @@ public class CursoService {
         
         @Transactional
         public Curso crearCurso(Curso curso) {
-            return cursoRepo.save(curso);
+            return cursoRepository.save(curso);
         }
         
         
         @Transactional
         public CronogramaCurso crearCronograma(Long idCurso, Long idSede, LocalDate fechaInicio, LocalDate fechaFin, int vacantes) {
-            Curso curso = cursoRepo.findById(idCurso)
+            Curso curso = cursoRepository.findById(idCurso)
                 .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
             Sede sede = sedeRepository.findById(idSede)
                 .orElseThrow(() -> new RuntimeException("Sede no encontrada"));
@@ -229,7 +242,7 @@ public class CursoService {
 
                 Alumno alumno = alumnoRepo.findById(idAlumno)
                     .orElseThrow(() -> new RuntimeException("Alumno no encontrado"));
-                Curso curso = cursoRepo.findById(idCurso)
+                Curso curso = cursoRepository.findById(idCurso)
                     .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
                 CronogramaCurso cronograma = cronogramaRepo.findById(idCronograma)
                     .orElseThrow(() -> new RuntimeException("Cronograma no encontrado"));
@@ -249,8 +262,21 @@ public class CursoService {
         
         
         public List<Curso> obtenerTodosLosCursos() {
-            return cursoRepo.findAll(); // Asegúrate que cursoRepository está inyectado
+            return cursoRepository.findAll(); // Asegúrate que cursoRepository está inyectado
         }
+
+
+		public CursoConCronogramasDTO obtenerCursoConCronogramas(Long id) {
+			Curso curso = cursoRepository.buscarCursoConCronogramas(id);
+			if (curso == null) {
+		        throw new RuntimeException("Curso no encontrado");
+		    }
+			System.out.println("CURSO >>> " + curso.getDescripcion());
+			System.out.println("CRONOGRAMAS >>> " + curso.getCronogramas().size());
+
+		    return CursoMapper.mapearCurso(curso);
+
+		}
 
         
 

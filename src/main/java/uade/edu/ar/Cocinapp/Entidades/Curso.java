@@ -1,8 +1,13 @@
 package uade.edu.ar.Cocinapp.Entidades;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import uade.edu.ar.Cocinapp.DTO.CronogramaDTO;
 
 @Entity
 @Getter
@@ -34,4 +39,10 @@ public class Curso {
     // modalidad: presencial, remoto o virtual
     @Column(columnDefinition = "varchar(20)")
     private String modalidad;
+
+    @OneToMany(mappedBy = "curso", fetch = FetchType.LAZY) 
+    private List<CronogramaCurso> cronogramas;
+
+
+	
 }

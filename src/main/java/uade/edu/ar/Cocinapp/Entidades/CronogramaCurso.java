@@ -18,7 +18,7 @@ public class CronogramaCurso { // cuando y donde se dicta ese curso, con cupos
     private Long idCronograma;
 
     // relacion con curso
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "idCurso")
     private Curso curso;
 
@@ -35,4 +35,18 @@ public class CronogramaCurso { // cuando y donde se dicta ese curso, con cupos
     //Los QR se generan por cronograma, cada QR está en la tabla 'Multimedia' con su url y id.
     @Lob
     private String qRid;
+    
+    
+    public Long getIdCronograma() { return idCronograma; }
+
+    public LocalDate getFechaInicio() { return fechaInicio; }
+
+    public LocalDate getFechaFin() { return fechaFin; }
+
+    public int getVacantesDisponibles() { return vacantesDisponibles; }
+
+    public String getQrId() { return qRid; }
+
+    public Sede getSede() { return sede; }
+
 }

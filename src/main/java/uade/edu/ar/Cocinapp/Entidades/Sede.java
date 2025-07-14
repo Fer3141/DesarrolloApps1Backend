@@ -26,5 +26,11 @@ public class Sede {
 
     private String tipoPromocion;
     private double promocionCursos;
+    
+    
+    public String getNombreSede() { return nombreSede; }
+
+    public String getDireccionSede() { return direccionSede; }
+
 }
 
