@@ -80,6 +80,11 @@ public class CursoController {
         @RequestParam String qr) {
 
         try {
+        	
+        	 System.out.println("===== Asistencia QR recibida =====");
+        	    System.out.println("ID Alumno: " + idAlumno);
+        	    System.out.println("QR recibido (idCronograma): " + qr);
+        	    
             cursoService.marcarAsistenciaPorQR(idAlumno, qr);
             return ResponseEntity.ok("Asistencia registrada correctamente.");
         } catch (Exception e) {
