@@ -320,51 +320,52 @@ public class CursoService {
 
         @Transactional
         public String marcarAsistenciaPorQR(Long idAlumno, String qrContenido) {
-        	 try {
-        	        Long idCronograma = Long.parseLong(qrContenido);
+            try {
+                Long idCurso = Long.parseLong(qrContenido);
 
-        	        // Verificar si está inscripto
-        	        boolean inscripto = inscripcionRepo.existsByAlumno_IdUsuarioAndCronograma_IdCronograma(idAlumno, idCronograma);
-        	        if (!inscripto) {
-        	            return "El alumno no está inscripto a ese curso/cronograma";
-        	        }
+                // Buscar inscripciones del alumno a ese curso
+                List<InscripcionCurso> inscripciones = inscripcionRepo.findByAlumno_IdUsuarioAndCronograma_Curso_IdCurso(idAlumno, idCurso);
 
-        	        Alumno alumno = alumnoRepo.findById(idAlumno)
-        	                .orElse(null);
-        	        if (alumno == null) return "Alumno no encontrado";
+                if (inscripciones.isEmpty()) {
+                    return "El alumno no está inscripto a este curso.";
+                }
 
-        	        CronogramaCurso cronograma = cronogramaRepo.findById(idCronograma)
-        	                .orElse(null);
-        	        if (cronograma == null) return "Cronograma no encontrado";
+                // Se asume que el alumno solo está inscripto una vez al curso
+                CronogramaCurso cronograma = inscripciones.get(0).getCronograma();
 
-        	        Curso curso = cronograma.getCurso();
+                Alumno alumno = alumnoRepo.findById(idAlumno).orElse(null);
+                if (alumno == null) return "Alumno no encontrado";
 
-        	        // Verificar si ya existe una asistencia hoy
-        	        LocalDateTime desde = LocalDate.now().atStartOfDay();
-        	        LocalDateTime hasta = desde.plusDays(1);
+                Curso curso = cronograma.getCurso();
+                if (curso == null) return "Curso no encontrado";
 
-        	        boolean yaRegistrada = acr.existsByAlumno_IdUsuarioAndCronograma_IdCronogramaAndFechaHoraBetween(
-        	                idAlumno, idCronograma, desde, hasta
-        	        );
+                // Verificar si ya existe una asistencia hoy para ese cronograma
+                LocalDateTime desde = LocalDate.now().atStartOfDay();
+                LocalDateTime hasta = desde.plusDays(1);
 
-        	        if (yaRegistrada) {
-        	            return "Ya se registró asistencia para hoy.";
-        	        }
+                boolean yaRegistrada = acr.existsByAlumno_IdUsuarioAndCronograma_IdCronogramaAndFechaHoraBetween(
+                    idAlumno, cronograma.getIdCronograma(), desde, hasta
+                );
 
-        	        // Guardar asistencia
-        	        AsistenciaCurso asistencia = new AsistenciaCurso();
-        	        asistencia.setAlumno(alumno);
-        	        asistencia.setCurso(curso);
-        	        asistencia.setCronograma(cronograma);
-        	        asistencia.setFechaHora(LocalDateTime.now());
+                if (yaRegistrada) {
+                    return "Ya se registró asistencia para hoy.";
+                }
 
-        	        acr.save(asistencia);
+                // Guardar asistencia
+                AsistenciaCurso asistencia = new AsistenciaCurso();
+                asistencia.setAlumno(alumno);
+                asistencia.setCurso(curso);
+                asistencia.setCronograma(cronograma);
+                asistencia.setFechaHora(LocalDateTime.now());
 
-        	        return "Asistencia registrada correctamente.";
-        	    } catch (Exception e) {
-        	        return "Error inesperado: " + e.getMessage();
-        	    }
+                acr.save(asistencia);
+
+                return "Asistencia registrada correctamente.";
+            } catch (Exception e) {
+                return "Error inesperado: " + e.getMessage();
+            }
         }
+
 
         @Transactional(readOnly = true)
         public List<Map<String, Object>> obtenerAsistenciasPorCurso(Long idAlumno, Long idCurso) {
