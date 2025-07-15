@@ -173,13 +173,7 @@ public class CursoService {
             throw new RuntimeException("No se puede inscribir a un cronograma cuya fecha de inicio ya pasó");
         }
         
-        LocalDate hoy = LocalDate.now();
-        LocalDate fechaLimite = cronograma.getFechaInicio().minusMonths(1);
-
-        // Si hoy es igual o después de la fecha límite → no puede inscribirse
-        if (!hoy.isBefore(fechaLimite)) {
-            throw new RuntimeException("La inscripción debe realizarse al menos 1 mes antes del inicio del curso");
-        }
+     
         
         if (cronograma.getVacantesDisponibles() <= 0) {
             throw new RuntimeException("no hay vacantes disponibles");
