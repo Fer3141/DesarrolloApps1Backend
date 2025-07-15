@@ -7,7 +7,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-
+@Table(name = "recetafavorita")
 //esta clase la creamos para poder guardar las recetas favoritas del usuario
 public class RecetaFavorita {
 
@@ -15,11 +15,11 @@ public class RecetaFavorita {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idFavorito;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idUsuario")
     private Usuario usuario;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idReceta")
     private Receta receta;
 }

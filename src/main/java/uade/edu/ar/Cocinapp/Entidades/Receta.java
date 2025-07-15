@@ -73,7 +73,13 @@ public class Receta {
     )
     private List<Utilizado> utilizados;
 
-
+    // <-- nueva relacion para favoritos -->
+    @OneToMany(
+      mappedBy = "receta",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true
+    )
+    private List<RecetaFavorita> favoritas;
 
 
     // Getters y setters
