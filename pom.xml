@@ -124,11 +124,6 @@
     <version>3.5.2</version>
 </dependency>
 
-    	<dependency>
-    		<groupId>uade.edu.ar</groupId>
-    		<artifactId>API2025</artifactId>
-    		<version>0.0.1-SNAPSHOT</version>
-    	</dependency>
     </dependencies>
 
     <build>
