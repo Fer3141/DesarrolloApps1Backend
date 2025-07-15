@@ -401,6 +401,7 @@ public class CursoService {
 
 		        CursoInscriptoDTO dto = new CursoInscriptoDTO();
 		        dto.idCronograma = c.getIdCronograma();
+                dto.idCurso = c.getCurso().getIdCurso();
 		        dto.descripcionCurso = c.getCurso().getDescripcion();
 		        dto.modalidad = c.getCurso().getModalidad();
 		        dto.requerimientos = c.getCurso().getRequerimientos();

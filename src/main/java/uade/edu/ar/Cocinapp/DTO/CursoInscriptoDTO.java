@@ -12,4 +12,5 @@ public class CursoInscriptoDTO {
     public String requerimientos;
     public double precioFinal;
 	public Long idCronograma;
+    public Long idCurso;
 }
