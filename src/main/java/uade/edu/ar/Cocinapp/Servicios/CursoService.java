@@ -312,11 +312,28 @@ public class CursoService {
                     throw new RuntimeException("El alumno no está inscripto a ese curso/cronograma");
                 }
 
+                // Verificar si ya tiene una asistencia registrada hoy
+                LocalDate hoy = LocalDate.now();
+                LocalDateTime inicioDelDia = hoy.atStartOfDay();
+                LocalDateTime finDelDia = hoy.plusDays(1).atStartOfDay();
+
+                boolean yaRegistrada = acr.existsByAlumno_IdUsuarioAndCronograma_IdCronogramaAndFechaHoraBetween(
+                    idAlumno,
+                    idCronograma,
+                    inicioDelDia,
+                    finDelDia
+                );
+
+                if (yaRegistrada) {
+                    throw new RuntimeException("Ya se registró asistencia para hoy.");
+                }
+
+                // Buscar entidades
                 Alumno alumno = alumnoRepo.findById(idAlumno)
                     .orElseThrow(() -> new RuntimeException("Alumno no encontrado"));
                 CronogramaCurso cronograma = cronogramaRepo.findById(idCronograma)
                     .orElseThrow(() -> new RuntimeException("Cronograma no encontrado"));
-                Curso curso = cronograma.getCurso(); // suponiendo que cronograma tiene getCurso()
+                Curso curso = cronograma.getCurso();
 
                 // Guardar asistencia
                 AsistenciaCurso asistencia = new AsistenciaCurso();
@@ -326,10 +343,12 @@ public class CursoService {
                 asistencia.setFechaHora(LocalDateTime.now());
 
                 acr.save(asistencia);
+
             } catch (Exception e) {
                 throw new RuntimeException("Error procesando el QR: " + e.getMessage(), e);
             }
         }
+
         
         
         public List<Curso> obtenerTodosLosCursos() {
