@@ -85,12 +85,12 @@ public class CursoController {
         	    System.out.println("ID Alumno: " + idAlumno);
         	    System.out.println("QR recibido (idCronograma): " + qr);
         	    
-            cursoService.marcarAsistenciaPorQR(idAlumno, qr);
-            return ResponseEntity.ok("Asistencia registrada correctamente.");
-        } catch (Exception e) {
-        	e.printStackTrace(); 
-        	return ResponseEntity.badRequest().body("Error interno: " + e.getMessage());
-        }
+        	    String resultado = cursoService.marcarAsistenciaPorQR(idAlumno, qr);
+                return ResponseEntity.ok(resultado);
+            } catch (Exception e) {
+                // Devuelve solo el mensaje
+                return ResponseEntity.ok("Asistencia no registrada: " + e.getMessage());
+            }
     }
 
 

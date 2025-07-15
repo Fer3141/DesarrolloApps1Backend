@@ -302,51 +302,51 @@ public class CursoService {
         }
 
         @Transactional
-        public void marcarAsistenciaPorQR(Long idAlumno, String qrContenido) {
-            try {
-                Long idCronograma = Long.parseLong(qrContenido);
+        public String marcarAsistenciaPorQR(Long idAlumno, String qrContenido) {
+        	 try {
+        	        Long idCronograma = Long.parseLong(qrContenido);
 
-                // Verificar si está inscripto
-                boolean inscripto = inscripcionRepo.existsByAlumno_IdUsuarioAndCronograma_IdCronograma(idAlumno, idCronograma);
-                if (!inscripto) {
-                    throw new RuntimeException("El alumno no está inscripto a ese curso/cronograma");
-                }
+        	        // Verificar si está inscripto
+        	        boolean inscripto = inscripcionRepo.existsByAlumno_IdUsuarioAndCronograma_IdCronograma(idAlumno, idCronograma);
+        	        if (!inscripto) {
+        	            return "El alumno no está inscripto a ese curso/cronograma";
+        	        }
 
-                // Verificar si ya tiene una asistencia registrada hoy
-                LocalDate hoy = LocalDate.now();
-                LocalDateTime inicioDelDia = hoy.atStartOfDay();
-                LocalDateTime finDelDia = hoy.plusDays(1).atStartOfDay();
+        	        Alumno alumno = alumnoRepo.findById(idAlumno)
+        	                .orElse(null);
+        	        if (alumno == null) return "Alumno no encontrado";
 
-                boolean yaRegistrada = acr.existsByAlumno_IdUsuarioAndCronograma_IdCronogramaAndFechaHoraBetween(
-                    idAlumno,
-                    idCronograma,
-                    inicioDelDia,
-                    finDelDia
-                );
+        	        CronogramaCurso cronograma = cronogramaRepo.findById(idCronograma)
+        	                .orElse(null);
+        	        if (cronograma == null) return "Cronograma no encontrado";
 
-                if (yaRegistrada) {
-                    throw new RuntimeException("Ya se registró asistencia para hoy.");
-                }
+        	        Curso curso = cronograma.getCurso();
 
-                // Buscar entidades
-                Alumno alumno = alumnoRepo.findById(idAlumno)
-                    .orElseThrow(() -> new RuntimeException("Alumno no encontrado"));
-                CronogramaCurso cronograma = cronogramaRepo.findById(idCronograma)
-                    .orElseThrow(() -> new RuntimeException("Cronograma no encontrado"));
-                Curso curso = cronograma.getCurso();
+        	        // Verificar si ya existe una asistencia hoy
+        	        LocalDateTime desde = LocalDate.now().atStartOfDay();
+        	        LocalDateTime hasta = desde.plusDays(1);
 
-                // Guardar asistencia
-                AsistenciaCurso asistencia = new AsistenciaCurso();
-                asistencia.setAlumno(alumno);
-                asistencia.setCurso(curso);
-                asistencia.setCronograma(cronograma);
-                asistencia.setFechaHora(LocalDateTime.now());
+        	        boolean yaRegistrada = acr.existsByAlumno_IdUsuarioAndCronograma_IdCronogramaAndFechaHoraBetween(
+        	                idAlumno, idCronograma, desde, hasta
+        	        );
 
-                acr.save(asistencia);
+        	        if (yaRegistrada) {
+        	            return "Ya se registró asistencia para hoy.";
+        	        }
 
-            } catch (Exception e) {
-                throw new RuntimeException("Error procesando el QR: " + e.getMessage(), e);
-            }
+        	        // Guardar asistencia
+        	        AsistenciaCurso asistencia = new AsistenciaCurso();
+        	        asistencia.setAlumno(alumno);
+        	        asistencia.setCurso(curso);
+        	        asistencia.setCronograma(cronograma);
+        	        asistencia.setFechaHora(LocalDateTime.now());
+
+        	        acr.save(asistencia);
+
+        	        return "Asistencia registrada correctamente.";
+        	    } catch (Exception e) {
+        	        return "Error inesperado: " + e.getMessage();
+        	    }
         }
 
         
