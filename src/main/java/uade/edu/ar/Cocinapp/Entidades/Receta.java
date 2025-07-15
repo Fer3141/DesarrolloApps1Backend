@@ -81,7 +81,16 @@ public class Receta {
     )
     private List<RecetaFavorita> favoritas;
 
-
+    /**
+     * Cascade de calificaciones
+     */
+    @OneToMany(
+      mappedBy = "receta",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true
+    )
+    private List<Calificacion> calificaciones;
+    
     // Getters y setters
 
     public Long getIdReceta() {
