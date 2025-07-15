@@ -88,7 +88,8 @@ public class CursoController {
             cursoService.marcarAsistenciaPorQR(idAlumno, qr);
             return ResponseEntity.ok("Asistencia registrada correctamente.");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        	e.printStackTrace(); 
+        	return ResponseEntity.badRequest().body("Error interno: " + e.getMessage());
         }
     }
 
