@@ -304,11 +304,7 @@ public class CursoService {
         @Transactional
         public void marcarAsistenciaPorQR(Long idAlumno, String qrContenido) {
             try {
-                ObjectMapper mapper = new ObjectMapper();
-                Map<String, Integer> data = mapper.readValue(qrContenido, Map.class);
-
-                Long idCurso = data.get("idCurso").longValue();
-                Long idCronograma = data.get("idCronograma").longValue();
+                Long idCronograma = Long.parseLong(qrContenido);
 
                 // Verificar si está inscripto
                 boolean inscripto = inscripcionRepo.existsByAlumno_IdUsuarioAndCronograma_IdCronograma(idAlumno, idCronograma);
@@ -318,10 +314,9 @@ public class CursoService {
 
                 Alumno alumno = alumnoRepo.findById(idAlumno)
                     .orElseThrow(() -> new RuntimeException("Alumno no encontrado"));
-                Curso curso = cursoRepository.findById(idCurso)
-                    .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
                 CronogramaCurso cronograma = cronogramaRepo.findById(idCronograma)
                     .orElseThrow(() -> new RuntimeException("Cronograma no encontrado"));
+                Curso curso = cronograma.getCurso(); // suponiendo que cronograma tiene getCurso()
 
                 // Guardar asistencia
                 AsistenciaCurso asistencia = new AsistenciaCurso();
