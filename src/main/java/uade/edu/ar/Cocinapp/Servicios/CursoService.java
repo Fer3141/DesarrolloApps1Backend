@@ -167,6 +167,12 @@ public class CursoService {
         CronogramaCurso cronograma = cronogramaRepo.findById(idCronograma)
                 .orElseThrow(() -> new RuntimeException("cronograma no encontrado"));
 
+        // Validar que la fecha de inicio no sea anterior a hoy
+        if (cronograma.getFechaInicio().isBefore(LocalDate.now())) {
+            throw new RuntimeException("No se puede inscribir a un cronograma cuya fecha de inicio ya pasó");
+        }
+        
+        
         if (cronograma.getVacantesDisponibles() <= 0) {
             throw new RuntimeException("no hay vacantes disponibles");
         }
