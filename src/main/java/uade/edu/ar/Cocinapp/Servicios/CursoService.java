@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -365,7 +366,17 @@ public class CursoService {
         	    }
         }
 
-        
+        @Transactional(readOnly = true)
+        public List<Map<String, Object>> obtenerAsistenciasPorCurso(Long idAlumno, Long idCurso) {
+            List<AsistenciaCurso> asistencias = acr.findByAlumno_IdUsuarioAndCurso_IdCurso(idAlumno, idCurso);
+
+            return asistencias.stream().map(a -> {
+                Map<String, Object> info = new HashMap<>();
+                info.put("fechaHora", a.getFechaHora());
+                info.put("cronograma", a.getCronograma().getIdCronograma());
+                return info;
+            }).collect(Collectors.toList());
+        }
         
         public List<Curso> obtenerTodosLosCursos() {
             return cursoRepository.findAll(); // Asegúrate que cursoRepository está inyectado

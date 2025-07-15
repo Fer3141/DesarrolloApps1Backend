@@ -2,6 +2,7 @@ package uade.edu.ar.Cocinapp.Controladores;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +96,7 @@ public class CursoController {
             }
     }
 
+    
 
     @PostMapping("/crearCurso")
     public ResponseEntity<?> crearCurso(@RequestBody Curso curso) {
@@ -103,6 +105,18 @@ public class CursoController {
             return ResponseEntity.ok("Curso creado con ID: " + nuevo.getIdCurso());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error al crear curso: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/asistencia/por-curso")
+    public ResponseEntity<?> obtenerAsistenciasPorCurso(
+            @RequestParam Long idAlumno,
+            @RequestParam Long idCurso) {
+        try {
+            List<Map<String, Object>> asistencias = cursoService.obtenerAsistenciasPorCurso(idAlumno, idCurso);
+            return ResponseEntity.ok(asistencias);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error al obtener asistencias: " + e.getMessage());
         }
     }
 

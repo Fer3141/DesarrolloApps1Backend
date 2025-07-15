@@ -15,5 +15,8 @@ public interface AsistenciaCursoRepository extends JpaRepository<AsistenciaCurso
     	    LocalDateTime inicio,
     	    LocalDateTime fin
     	);
+
+	List<AsistenciaCurso> findByAlumno_IdUsuarioAndCurso_IdCurso(Long idAlumno, Long idCurso);
+
 }
 
