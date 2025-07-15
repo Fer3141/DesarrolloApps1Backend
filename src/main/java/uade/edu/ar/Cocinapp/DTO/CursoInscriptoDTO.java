@@ -11,4 +11,5 @@ public class CursoInscriptoDTO {
     public LocalDate fechaFin;
     public String requerimientos;
     public double precioFinal;
+	public Long idCronograma;
 }

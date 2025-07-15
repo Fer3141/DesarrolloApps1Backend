@@ -1,6 +1,7 @@
 package uade.edu.ar.Cocinapp.Servicios;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import uade.edu.ar.Cocinapp.DTO.CursoConCronogramasDTO;
@@ -39,6 +40,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -378,6 +381,7 @@ public class CursoService {
 		        CronogramaCurso c = i.getCronograma();
 
 		        CursoInscriptoDTO dto = new CursoInscriptoDTO();
+		        dto.idCronograma = c.getIdCronograma();
 		        dto.descripcionCurso = c.getCurso().getDescripcion();
 		        dto.modalidad = c.getCurso().getModalidad();
 		        dto.requerimientos = c.getCurso().getRequerimientos();
@@ -396,6 +400,22 @@ public class CursoService {
 
 		    return resultado;
 		}
+
+
+
+		@Transactional
+		public String darseDeBaja(Long idAlumno, Long idCronograma) {
+		    Optional<InscripcionCurso> inscripcionOpt =
+		        inscripcionRepo.findByAlumno_IdUsuarioAndCronograma_IdCronograma(idAlumno, idCronograma);
+
+		    if (inscripcionOpt.isEmpty()) {
+		        throw new RuntimeException("No estás inscripto a este curso.");
+		    }
+
+		    inscripcionRepo.delete(inscripcionOpt.get());
+		    return "Te diste de baja del curso correctamente.";
+		}
+
 
 
         

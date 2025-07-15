@@ -2,6 +2,7 @@ package uade.edu.ar.Cocinapp.Controladores;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import uade.edu.ar.Cocinapp.DTO.CursoConCronogramasDTO;
 import uade.edu.ar.Cocinapp.Entidades.CronogramaCurso;
 import uade.edu.ar.Cocinapp.Entidades.Curso;
+import uade.edu.ar.Cocinapp.Entidades.InscripcionCurso;
 import uade.edu.ar.Cocinapp.Servicios.AsistenciaService;
 import uade.edu.ar.Cocinapp.Servicios.CursoService;
 
@@ -128,6 +130,27 @@ public class CursoController {
     	  CursoConCronogramasDTO dto = cursoService.obtenerCursoConCronogramas(id);
           return ResponseEntity.ok(dto);
     }
+    
+    
+    
+
+    @PostMapping("/cursos/baja")
+    public ResponseEntity<?> darseDeBaja(
+        @RequestParam Long idAlumno,
+        @RequestParam Long idCronograma) {
+
+    	
+    	 System.out.println("Ingresando baja curso..");
+    	 System.out.println("ID Alumno recibido: " + idAlumno);
+ 	    System.out.println("idCronograma recibido: " + idCronograma);
+        try {
+            String mensaje = cursoService.darseDeBaja(idAlumno, idCronograma);
+            return ResponseEntity.ok(mensaje);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al darse de baja: " + e.getMessage());
+        }
+    }
+
     
 }
 
