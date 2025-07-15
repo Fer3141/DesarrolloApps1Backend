@@ -418,9 +418,23 @@ public class CursoService {
 		        throw new RuntimeException("No estás inscripto a este curso.");
 		    }
 
-		    inscripcionRepo.delete(inscripcionOpt.get());
-		    return "Te diste de baja del curso correctamente.";
+		    InscripcionCurso inscripcion = inscripcionOpt.get();
+
+		    // Obtener alumno y curso
+		    Alumno alumno = inscripcion.getAlumno();
+		    double precioCurso = inscripcion.getCronograma().getCurso().getPrecio();
+
+		    // Sumar a la cuenta corriente del alumno
+		    double saldoActual = alumno.getCuentaCorriente() != null ? alumno.getCuentaCorriente() : 0.0;
+		    alumno.setCuentaCorriente((float) (saldoActual + precioCurso));
+		    alumnoRepo.save(alumno); // Asegurate de tener alumnoRepo inyectado
+
+		    // Eliminar inscripción
+		    inscripcionRepo.delete(inscripcion);
+
+		    return "Te diste de baja del curso correctamente. Se te reintegraron $" + precioCurso;
 		}
+
 
 
 
